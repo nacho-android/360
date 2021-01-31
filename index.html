@@ -21,8 +21,10 @@
         <img id="fred_park-thumb" crossorigin="anonymous" src="./images/fred_park-thumb.jpg">
         <img id="maroubra" crossorigin="anonymous" src="./images/maroubra.jpg">
         <img id="maroubra-thumb" crossorigin="anonymous" src="./images/maroubra-thumb.jpg">
-        <img id="yeoland_point" crossorigin="anonymous" src="./images/yeoland_point.jpg">
-        <img id="yeoland_point-thumb" crossorigin="anonymous" src="./images/yeoland_point-thumb.jpg">
+        <img id="reef" crossorigin="anonymous" src="./images/reef.jpg">
+        <img id="reef-thumb" crossorigin="anonymous" src="./images/reef-thumb.jpg">
+        <img id="nz" crossorigin="anonymous" src="./images/nz.jpg">
+        <img id="nz-thumb" crossorigin="anonymous" src="./images/nz-thumb.jpg">
         <audio id="click-sound" crossorigin="anonymous" src="./images/click.mp3" preload="auto"></audio>
       </a-assets>
       
@@ -69,7 +71,22 @@
                   event-set__click="_event: click; _target: #sky; src: #yeoland_point"
                   sound="src: #click-sound; on: click"></a-entity>
       </a-entity>
-      
+
+      <a-entity rotation="30 0 0" position="0 10 0"> 
+        <a-entity geometry="primitive: sphere; radius: 2; thetaStart: 10" position="7 2 -8" material="shader: flat; src: #reef" 
+                  animation="property: rotation; from: 0 360 0; dir:reverse; loop: true; dur: 25000; easing: linear"
+                  animation__hover="property: scale; to: 1.2 1.2 1.2; startEvents: mouseenter; dur: 500; easing: easeOutSine"
+                  animation__leave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 500; easing: easeOutSine"
+                  event-set__click="_event: click; _target: #sky; src: #reef"
+                  sound="src: #click-sound; on: click"></a-entity>
+        <a-entity geometry="primitive: sphere; radius: 2; thetaStart: 10" position="-7 2 -8" material="shader: flat; src: #nz-thumb" 
+                  animation="property: rotation; from: 0 360 0; dir:reverse; loop: true; dur: 25000; easing: linear"
+                  animation__hover="property: scale; to: 1.2 1.2 1.2; startEvents: mouseenter; dur: 500; easing: easeOutSine"
+                  animation__leave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 500; easing: easeOutSine"
+                  event-set__click="_event: click; _target: #sky; src: #nz"
+                  sound="src: #click-sound; on: click"></a-entity>
+      </a-entity>
+
     </a-scene>
   </body>
 </html>
