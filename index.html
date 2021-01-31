@@ -17,13 +17,15 @@
         material="shader: flat; src: ${thumb}"
         event-set__mouseenter="scale: 1.2 1.2 1"
         event-set__mouseleave="scale: 1 1 1"
-        event-set__click="_target: #image-360; _delay: 300; material.src: ${src}"
-        proxy-event="event: click; to: #image-360; as: fade"
-        sound="on: click; src: #click-sound"></a-entity>
+        event-set__triggerdown="_target: #image-360; _delay: 300; material.src: ${src}"
+        proxy-event="event: triggerdown; to: #image-360; as: fade"
+        sound="on: triggerdown; src: #triggerdown-sound"></a-entity>
     </script>
   </head>
   <body>
     <a-scene>
+      <a-entity oculus-touch-controls="hand: left"></a-entity>
+      <a-entity oculus-touch-controls="hand: right"></a-entity>
       <a-assets>
         <img id="city" crossorigin="anonymous" src="./images/jubilee_park.jpg">
         <img id="city-thumb" crossorigin="anonymous" src="./images/jubilee_park-thumb.jpg">
@@ -31,7 +33,7 @@
         <img id="mountains-thumb" crossorigin="anonymous" src="./images/blue_mountains-thumb.jpg">
         <img id="harbour" crossorigin="anonymous" src="./images/middle_harbour.jpg">
         <img id="harbour-thumb" crossorigin="anonymous" src="./images/middle_harbour-thumb.jpg">
-        <audio id="click-sound" crossorigin="anonymous" src="https://cdn.aframe.io/360-image-gallery-boilerplate/audio/click.ogg"></audio>
+        <audio id="triggerdown-sound" crossorigin="anonymous" src="https://cdn.aframe.io/360-image-gallery-boilerplate/audio/click.ogg"></audio>
       </a-assets>
 
       <!-- 360-degree image. -->
@@ -50,7 +52,7 @@
       <a-entity camera look-controls>
         <a-cursor
           id="cursor"
-          animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
+          animation__triggerdown="property: scale; startEvents: triggerdown; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
           animation__fusing="property: fusing; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
           event-set__mouseenter="_event: mouseenter; color: springgreen"
           event-set__mouseleave="_event: mouseleave; color: black"
