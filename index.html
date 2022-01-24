@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <title>360 Worlds</title>
     <meta name="description" content="360 Worlds">
-    <script src="https://aframe.io/releases/1.1.0/aframe.min.js"></script>
-    <script src="https://unpkg.com/aframe-event-set-component@3.0.3/dist/aframe-event-set-component.min.js"></script>
+    <script src="./js/aframe.min.js"></script>
+    <script src="./js/aframe-event-set-component.min.js"></script>
   </head>
   <body>
     <a-scene>
@@ -29,7 +29,6 @@
         <img id="nz-thumb" src="./images/nz-thumb.jpg">
         <img id="lake_johnson_snow" src="./images/lake_johnson_snow.jpg">
         <img id="lake_johnson_snow-thumb" src="./images/lake_johnson_snow-thumb.jpg">
-        <img id="lake_johnson_snow2" src="./images/lake_johnson_snow2.jpg">
         <audio id="click-sound" src="./images/click.mp3" preload="auto"></audio>
       </a-assets>
       
@@ -94,7 +93,7 @@
                   animation="property: rotation; from: 0 360 0; dir:reverse; loop: true; dur: 25000; easing: linear"
                   animation__hover="property: scale; to: 1.2 1.2 1.2; startEvents: mouseenter; dur: 500; easing: easeOutSine"
                   animation__leave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 500; easing: easeOutSine"
-                  event-set__click="_event: click; _target: #sky; src: #lake_johnson_snow2"
+                  event-set__click="_event: click; _target: #sky; src: #nz"
                   sound="src: #click-sound; on: click"></a-entity>
       </a-entity>
 
