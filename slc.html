@@ -25,10 +25,12 @@
         <img id="2-thumb" src="./images/SLC_2_814-thumb.jpg">
         <img id="3" src="./images/SLC_3_817.jpg">
         <img id="3-thumb" src="./images/SLC_3_817-thumb.jpg">
+        <img id="4" src="./images/SLC_4_840.jpg">
+        <img id="4-thumb" src="./images/SLC_4_840-thumb.jpg">
         <audio id="click-sound" src="./images/click.mp3" preload="auto"></audio>
       </a-assets>
       
-      <a-sky id="sky" src="#1" rotation="0 -130 0"></a-sky>
+      <a-sky id="sky" src="#4" rotation="0 -130 0"></a-sky>
 
       <a-entity id="mouseCursor" cursor="rayOrigin: mouse"></a-entity>
       <a-entity laser-controls="hand: right"></a-entity>      
@@ -51,6 +53,12 @@
                   animation__hover="property: scale; to: 1.2 1.2 1.2; startEvents: mouseenter; dur: 500; easing: easeOutSine"
                   animation__leave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 500; easing: easeOutSine"
                   event-set__click="_event: click; _target: #sky; src: #3"
+                  sound="src: #click-sound; on: click"></a-entity>
+        <a-entity geometry="primitive: sphere; radius: 2; thetaStart: 10" position="14 0 -10" material="shader: flat; src: #4-thumb" 
+                  animation="property: rotation; from: 0 360 0; dir:reverse; loop: true; dur: 25000; easing: linear"
+                  animation__hover="property: scale; to: 1.2 1.2 1.2; startEvents: mouseenter; dur: 500; easing: easeOutSine"
+                  animation__leave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 500; easing: easeOutSine"
+                  event-set__click="_event: click; _target: #sky; src: #4"
                   sound="src: #click-sound; on: click"></a-entity>
       </a-entity>
 
