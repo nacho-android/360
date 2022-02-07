@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SC4JLLVLX9"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-SC4JLLVLX9');
+    </script>
+    <meta charset="utf-8">
+    <title>360 Worlds - 404 Page Not Found</title>
+    <meta name="description" content="360 Worlds - 404 Page Not Found">
+    <script src="./js/aframe.min.js"></script>
+    <script src="./js/aframe-event-set-component.min.js"></script>
+  </head>
+  <body>
+    <a-scene loading-screen="dotsColor: #19367D; backgroundColor: #757575">
+
+      <a-assets>
+        <img id="nz" src="./images/nz.jpg">
+        <audio id="click-sound" src="./images/click.mp3" preload="auto"></audio>
+      </a-assets>
+      
+      <a-sky id="sky" src="#nz" rotation="0 10 0"></a-sky>
+
+      <a-entity id="mouseCursor" cursor="rayOrigin: mouse"></a-entity>
+      <a-entity laser-controls="hand: right"></a-entity>      
+            
+      <a-entity rotation="20 0 0" position="0 0 0">
+        <a-entity link="href: index.html; title: Main Menu" geometry="primitive: cone; radiusBottom: 0.8; radiusTop: 0.01; height: 2" rotation="0 0 90" position="-2.3 0 -15" material="shader: standard; color: #5D82DF; metalness: 0.3"
+                  animation__hover="property: scale; to: 1.2 1.2 1.2; startEvents: mouseenter; dur: 500; easing: easeOutSine"
+                  animation__leave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 500; easing: easeOutSine"
+                  animation__colorhover="property: components.material.material.color; type: color; to: #DF5D5F; startEvents: mouseenter; dur: 500"
+                  animation__colorleave="property: components.material.material.color; type: color; to: #5D82DF; startEvents: mouseleave; dur: 500"
+                  event-set__click="_event: click"
+                  sound="src: #click-sound; on: click"></a-entity>
+      </a-entity>
+
+      <a-text font="roboto" align="center" anchor="center" baseline="center" color="#222222" width="25" position="0 9 -14" rotation="0 0 0" value="404\nPage Not Found\nPlease Return to Main Menu"></a-text>
+      <a-text font="roboto" align="center" anchor="center" baseline="center" color="#222222" width="18" position="1 5.2 -14" rotation="0 0 0" value="Main Menu"></a-text>
+
+     </a-scene>
+  </body>
+</html>
