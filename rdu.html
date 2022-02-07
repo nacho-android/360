@@ -10,8 +10,8 @@
       gtag('config', 'G-SC4JLLVLX9');
     </script>
     <meta charset="utf-8">
-    <title>360 Worlds</title>
-    <meta name="description" content="360 Worlds">
+    <title>360 Worlds - Raleigh, North Carolina, USA</title>
+    <meta name="description" content="360 Worlds - Raleigh, North Carolina, USA">
     <script src="./js/aframe.min.js"></script>
     <script src="./js/aframe-event-set-component.min.js"></script>
   </head>
@@ -19,43 +19,44 @@
     <a-scene loading-screen="dotsColor: #19367D; backgroundColor: #757575">
 
       <a-assets>
-        <img id="nz" src="./images/nz.jpg">
-        <img id="city-thumb" src="./images/jubilee_park-thumb.jpg">
+        <img id="lake_johnson_snow" src="./images/lake_johnson_snow.jpg">
         <img id="lake_johnson_snow-thumb" src="./images/lake_johnson_snow-thumb.jpg">
-        <img id="3-thumb" src="./images/SLC_3_817-thumb.jpg">
+        <img id="fred_park" src="./images/fred_park.jpg">
+        <img id="fred_park-thumb" src="./images/fred_park-thumb.jpg">
         <audio id="click-sound" src="./images/click.mp3" preload="auto"></audio>
       </a-assets>
       
-      <a-sky id="sky" src="#nz" rotation="0 10 0"></a-sky>
+      <a-sky id="sky" src="#lake_johnson_snow" rotation="0 -130 0"></a-sky>
 
       <a-entity id="mouseCursor" cursor="rayOrigin: mouse"></a-entity>
       <a-entity laser-controls="hand: right"></a-entity>      
       
-      <a-entity rotation="-10 0 0" position="0 8 0"> 
-       <a-entity link="href: aus.html; title: Australia" geometry="primitive: sphere; radius: 2" position="-7 0 -14" material="shader: flat; src: #city-thumb" 
-                  animation="property: rotation; from: 0 360 0; dir:reverse; loop: true; dur: 25000; easing: linear"
+      <a-entity rotation="20 0 0" position="0 10 0">
+
+        <a-entity link="href: index.html; title: Main Menu" geometry="primitive: cone; radiusBottom: 0.8; radiusTop: 0.01; height: 2" rotation="0 0 90" position="-2.3 4 -15" material="shader: standard; color: #5D82DF; metalness: 0.3"
                   animation__hover="property: scale; to: 1.2 1.2 1.2; startEvents: mouseenter; dur: 500; easing: easeOutSine"
                   animation__leave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 500; easing: easeOutSine"
+                  animation__colorhover="property: components.material.material.color; type: color; to: #DF5D5F; startEvents: mouseenter; dur: 500"
+                  animation__colorleave="property: components.material.material.color; type: color; to: #5D82DF; startEvents: mouseleave; dur: 500"
                   event-set__click="_event: click"
                   sound="src: #click-sound; on: click"></a-entity>
-        <a-entity link="href: rdu.html; title: Raleigh" geometry="primitive: sphere; radius: 2" position="0 0 -14" material="shader: flat; src: #lake_johnson_snow-thumb" 
+
+        <a-entity geometry="primitive: sphere; radius: 2; thetaStart: 10" position="-3.5 0 -15" material="shader: flat; src: #fred_park-thumb" 
                   animation="property: rotation; from: 0 360 0; dir:reverse; loop: true; dur: 25000; easing: linear"
                   animation__hover="property: scale; to: 1.2 1.2 1.2; startEvents: mouseenter; dur: 500; easing: easeOutSine"
                   animation__leave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 500; easing: easeOutSine"
-                  event-set__click="_event: click"
+                  event-set__click="_event: click; _target: #sky; src: #fred_park"
                   sound="src: #click-sound; on: click"></a-entity>
-        <a-entity link="href: slc.html; title: Salt Lake City" geometry="primitive: sphere; radius: 2" position="7 0 -14" material="shader: flat; src: #3-thumb" 
+        <a-entity geometry="primitive: sphere; radius: 2; thetaStart: 10" position="3.5 0 -15" material="shader: flat; src: #lake_johnson_snow-thumb" 
                   animation="property: rotation; from: 0 360 0; dir:reverse; loop: true; dur: 25000; easing: linear"
                   animation__hover="property: scale; to: 1.2 1.2 1.2; startEvents: mouseenter; dur: 500; easing: easeOutSine"
                   animation__leave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 500; easing: easeOutSine"
-                  event-set__click="_event: click"
+                  event-set__click="_event: click; _target: #sky; src: #lake_johnson_snow"
                   sound="src: #click-sound; on: click"></a-entity>
       </a-entity>
 
-      <a-text font="roboto" align="center" anchor="center" baseline="bottom" color="#222222" width="18" position="-7 2.3 -14" rotation="0 0 0" value="Australia"></a-text>
-      <a-text font="roboto" align="center" anchor="center" baseline="center" color="#222222" width="18" position="0 2.3 -14" rotation="0 0 0" value="Raleigh, NC \n USA"></a-text>
-      <a-text font="roboto" align="center" anchor="center" baseline="center" color="#222222" width="18" position="7 2.3 -14" rotation="0 0 0" value="Salt Lake City, UT \n USA"></a-text>
+      <a-text font="roboto" align="center" anchor="center" baseline="center" color="#222222" width="18" position="1 18.75 -12.5" rotation="20 0 0" value="Main Menu"></a-text>
 
-     </a-scene>
+    </a-scene>
   </body>
 </html>
