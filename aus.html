@@ -19,6 +19,8 @@
     <a-scene loading-screen="dotsColor: #19367D; backgroundColor: #757575">
 
       <a-assets>
+        <img id="maroubra" src="./images/maroubra_beach.jpg">
+        <img id="maroubra-thumb" src="./images/maroubra_beach-thumb.jpg">
         <img id="city" src="./images/jubilee_park.jpg">
         <img id="city-thumb" src="./images/jubilee_park-thumb.jpg">
         <img id="mountains" src="./images/blue_mountains.jpg">
@@ -32,10 +34,11 @@
         <audio id="click-sound" src="./images/click.mp3" preload="auto"></audio>
       </a-assets>
       
-      <a-sky id="sky" src="#city" rotation="0 -70 0"></a-sky>
+      <a-sky id="sky" src="#maroubra" rotation="0 -70 0"></a-sky>
 
       <a-entity id="mouseCursor" cursor="rayOrigin: mouse"></a-entity>
-      <a-entity laser-controls="hand: right"></a-entity>      
+      <a-entity laser-controls="hand: right"></a-entity>
+      <a-entity laser-controls="hand: left"></a-entity>
       
       <a-entity rotation="20 0 0" position="0 10 0">
 
@@ -76,6 +79,12 @@
                   animation__hover="property: scale; to: 1.2 1.2 1.2; startEvents: mouseenter; dur: 500; easing: easeOutSine"
                   animation__leave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 500; easing: easeOutSine"
                   event-set__click="_event: click; _target: #sky; src: #city"
+                  sound="src: #click-sound; on: click"></a-entity>
+        <a-entity geometry="primitive: sphere; radius: 2; thetaStart: 10" position="17.5 0 -10" material="shader: flat; src: #maroubra-thumb" 
+                  animation="property: rotation; from: 0 360 0; dir:reverse; loop: true; dur: 25000; easing: linear"
+                  animation__hover="property: scale; to: 1.2 1.2 1.2; startEvents: mouseenter; dur: 500; easing: easeOutSine"
+                  animation__leave="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 500; easing: easeOutSine"
+                  event-set__click="_event: click; _target: #sky; src: #maroubra"
                   sound="src: #click-sound; on: click"></a-entity>
       </a-entity>
 
