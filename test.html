@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SC4JLLVLX9"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-SC4JLLVLX9');
+    </script>
+    <meta charset="utf-8">
+    <title>360 Worlds - Test</title>
+    <meta name="description" content="360 Worlds - Test">
+    <script src="./js/aframe.min.js"></script>
+    <script src="./js/aframe-event-set-component.min.js"></script>
+  </head>
+  <body>
+    <a-scene loading-screen="dotsColor: #19367D; backgroundColor: #757575">
+
+      <a-assets>
+        <img id="test" src="./images/test.jpg">
+      </a-assets>
+      
+      <a-sky id="sky" src="#test" rotation="0 -130 0"></a-sky>
+      <a-entity id="mouseCursor" cursor="rayOrigin: mouse"></a-entity>
+      <a-entity laser-controls="hand: right"></a-entity>      
+      
+    </a-scene>
+  </body>
+</html>
