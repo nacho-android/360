@@ -21,7 +21,7 @@
   </head>
   <body>
     <a-scene loading-screen="dotsColor: #19367D; backgroundColor: #757575" vr-mode-ui="enabled: false">
-      <a-entity id="cam" camera="zoom: 1" look-controls="reverseMouseDrag: true"></a-entity>
+      <a-entity id="cam" camera="zoom: 1" look-controls="reverseMouseDrag: true; magicWindowTrackingEnabled: false"></a-entity>
       <a-sky id="sky" rotation="0 0 0" geometry="segmentsHeight:128; segmentsWidth:256"></a-sky>
       <a-entity id="mouseCursor" cursor="rayOrigin: mouse"></a-entity>
       <a-entity laser-controls="hand: right"></a-entity>      
