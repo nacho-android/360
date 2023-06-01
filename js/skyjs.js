@@ -57,7 +57,7 @@ function randomSky() {
   console.log(skysrc)
   skysrcprev = skysrc
   $("#sky").attr("src", LDimages[skysrc])
-  setTimeout(() => {$("#sky").attr("src", images[skysrc])},100)
+  setTimeout(() => {$("#sky").attr("src", images[skysrc])},500)
   document.getElementById("toplabel").innerHTML = labels[skysrc]
   resetZoom()
 }
@@ -68,7 +68,7 @@ function SkySelect(x) {
   console.log(skysrc)
   skysrcprev = skysrc
   $("#sky").attr("src", LDimages[skysrc])
-  setTimeout(() => {$("#sky").attr("src", images[skysrc])},100)
+  setTimeout(() => {$("#sky").attr("src", images[skysrc])},500)
   document.getElementById("toplabel").innerHTML = labels[skysrc]
   resetZoom()
 }
