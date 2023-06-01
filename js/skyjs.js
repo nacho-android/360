@@ -1,4 +1,19 @@
 /* list all images for sky */
+var LDimages = [
+"./images/Coral-Sea-20200223_FH_q60_30MAY2023-LD.jpg",
+"./images/Gamcheon_228_PSFH_q60_30MAY2023-LD.jpg",
+"./images/Gwangalli_185_PSFH_q60_30MAY2023-LD.jpg",
+"./images/LJM_751_FH_q60_30MAY2023-LD.jpg",
+"./images/Maroubra-20221109_FH_q60_30MAY2023-LD.jpg",
+"./images/Mashibayashi_143_PSFH_q60_30MAY2023-LD.jpg",
+"./images/NZ-Clyde_498_FH_q60_30MAY2023-LD.jpg",
+"./images/Owakudani_066_PSFH_q60_23MAY2023-LD.jpg",
+"./images/SLC_817_FH_q60_30MAY2023-LD.jpg",
+"./images/SLC_840_FH_q60_30MAY2023-LD.jpg",
+"./images/SLC-Jordanelle-Reservoir_854_FH_q60_30MAY2023-LD.jpg",
+"./images/SLC-Willow-Creek_891_FH_q60_30MAY2023-LD.jpg"
+]
+
 var images = [
 "./images/Coral-Sea-20200223_FH_q60_30MAY2023.jpg",
 "./images/Gamcheon_228_PSFH_q60_30MAY2023.jpg",
@@ -41,7 +56,8 @@ function randomSky() {
    }
   console.log(skysrc)
   skysrcprev = skysrc
-  $("#sky").attr("src", images[skysrc])
+  $("#sky").attr("src", LDimages[skysrc])
+  setTimeout(() => {$("#sky").attr("src", images[skysrc])},100)
   document.getElementById("toplabel").innerHTML = labels[skysrc]
   resetZoom()
 }
@@ -51,7 +67,9 @@ function SkySelect(x) {
   skysrc = x
   console.log(skysrc)
   skysrcprev = skysrc
-  $("#sky").attr("src", images[skysrc])
+  $("#sky").attr("src", LDimages[skysrc])
+  setTimeout(() => {$("#sky").attr("src", images[skysrc])},100)
   document.getElementById("toplabel").innerHTML = labels[skysrc]
   resetZoom()
 }
+
