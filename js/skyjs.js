@@ -11,7 +11,8 @@ var LDimages = [
 "./images/SLC_817_FH_q60_30MAY2023-LD.jpg",
 "./images/SLC_840_FH_q60_30MAY2023-LD.jpg",
 "./images/SLC-Jordanelle-Reservoir_854_FH_q60_30MAY2023-LD.jpg",
-"./images/SLC-Willow-Creek_891_FH_q60_30MAY2023-LD.jpg"
+"./images/SLC-Willow-Creek_891_FH_q60_30MAY2023-LD.jpg",
+"./images/Carrs-Park_340_PSFH_q60_03JUN2023-LD.jpg"
 ]
 
 var images = [
@@ -26,7 +27,8 @@ var images = [
 "./images/SLC_817_FH_q60_30MAY2023.jpg",
 "./images/SLC_840_FH_q60_30MAY2023.jpg",
 "./images/SLC-Jordanelle-Reservoir_854_FH_q60_30MAY2023.jpg",
-"./images/SLC-Willow-Creek_891_FH_q60_30MAY2023.jpg"
+"./images/SLC-Willow-Creek_891_FH_q60_30MAY2023.jpg",
+"./images/Carrs-Park_340_PSFH_q60_03JUN2023.jpg.jpg"
 ]
 
 /* list corresponding sky labels */
@@ -42,7 +44,8 @@ var labels = [
 "University of Utah, Salt Lake City, Utah, USA", 
 "Little Dell Reservoir, Salt Lake City, Utah, USA",
 "Jordanelle Reservoir, Heber City, Utah, USA",
-"Willow Creek Park, Park City, Utah, USA"
+"Willow Creek Park, Park City, Utah, USA",
+"Carss Park, Carss Park, New South Wales, Australia"
 ]
 
 var skysrcprev = -1
