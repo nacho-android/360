@@ -28,7 +28,7 @@ var images = [
 "./images/SLC_840_FH_q60_30MAY2023.jpg",
 "./images/SLC-Jordanelle-Reservoir_854_FH_q60_30MAY2023.jpg",
 "./images/SLC-Willow-Creek_891_FH_q60_30MAY2023.jpg",
-"./images/Carrs-Park_340_PSFH_q60_03JUN2023.jpg.jpg"
+"./images/Carrs-Park_340_PSFH_q60_03JUN2023.jpg"
 ]
 
 /* list corresponding sky labels */
