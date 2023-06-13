@@ -23,7 +23,7 @@
 }
 .menu__btn {
   position: fixed;
-  top: 20px;
+  top: 23px;
   left: 20px;
   width: 26px;
   height: 26px;
@@ -480,5 +480,40 @@ h5 {
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: #555; 
+}
+
+/* copylink box */
+.copybox {
+  text-align: center;
+  font-family: 'hm_light', sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  position: relative;
+  top: 5px;
+  overflow: hidden;
+  contain: layout;
+  margin: auto;
+  width: 75%;
+  z-index: 2;
+  background-color: #eceff1;
+  opacity: 80%;
+}
+
+.copybutton {
+  color: #333;
+  border-radius: 6px;
+  padding: 0px 2px;
+  text-align: center;
+  font-family: 'hm_light', sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  position: relative;
+  top: 5px;
+  overflow: hidden;
+  contain: layout;
+  margin: auto;
+  z-index: 2;
+  background-color: #eceff1;
+  opacity: 80%;
 }
 

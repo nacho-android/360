@@ -48,24 +48,24 @@ var labels = [
 "Carss Park, Carss Park, New South Wales, Australia"
 ]
 
+/* gets sky from URL, drops trailing zero. If invalid or blank, returns null */
+var rawskyURL = new URLSearchParams(window.location.search).get('sky');
+if (rawskyURL == "") {var skyURL = null}
+else if (rawskyURL == null) {var skyURL = null}
+else {var skyURL = +rawskyURL}
+console.log(rawskyURL);
+console.log(skyURL);
+
 var skysrcprev = -1
 var skysrc = -1
 
-
-/* returns a random integer up to length of images variable list, logs it, then changes the sky and label */
+/* returns a random integer up to length of images variable list, corresponding to a sky that is not the previously selected sky, then calls SkySelect to change the sky and label */
 function randomSky() {
-  while (skysrc == skysrcprev) {
-  skysrc = Math.floor(Math.random() * images.length);
-   }
-  console.log(skysrc)
-  skysrcprev = skysrc
-  $("#sky").attr("src", LDimages[skysrc])
-  setTimeout(() => {$("#sky").attr("src", images[skysrc])},500)
-  document.getElementById("toplabel").innerHTML = labels[skysrc]
-  resetZoom()
+  while (skysrc == skysrcprev) {skysrc = Math.floor(Math.random() * images.length)}
+  SkySelect(skysrc)
 }
 
-/* Changes to user-selected sky and label */
+/* Changes to user-selected sky and label, clears the URL */
 function SkySelect(x) {
   skysrc = x
   console.log(skysrc)
@@ -73,6 +73,27 @@ function SkySelect(x) {
   $("#sky").attr("src", LDimages[skysrc])
   setTimeout(() => {$("#sky").attr("src", images[skysrc])},500)
   document.getElementById("toplabel").innerHTML = labels[skysrc]
+  document.getElementById("copyLink").value = "https://www.360worlds.org/index.html?sky=" + skysrc
   resetZoom()
+  history.pushState(null, null, "index.html")
 }
 
+/* checks for a valid sky request in the URL and loads it, else loads a randomsky on first load */
+function firstSky() {
+  if (skyURL == null) {randomSky()}
+  else if ((skyURL <= (images.length-1)) && (skyURL > -1)) {SkySelect(skyURL)}
+  else {randomSky()}
+}
+
+/* copies URL to clipboard */
+function copyURL() {
+  // Get the text field
+  var copyText = document.getElementById("copyLink");
+
+  // Select the text field
+  copyText.select();
+  copyText.setSelectionRange(0, 99999); // For mobile devices
+
+   // Copy the text inside the text field
+  navigator.clipboard.writeText(copyText.value);
+}
