@@ -13,7 +13,8 @@ var LDimages = [
 "./images/SLC-Jordanelle-Reservoir_854_FH_q60_30MAY2023-LD.jpg",
 "./images/SLC-Willow-Creek_891_FH_q60_30MAY2023-LD.jpg",
 "./images/Carrs-Park_340_PSFH_q60_03JUN2023-LD.jpg",
-"./images/Collaroy_419_PSFH_q60_18JUN2023-LD.jpg"
+"./images/Collaroy_419_PSFH_q60_18JUN2023-LD.jpg",
+"./images/WRyde_476__PSGFH_q60_08DEC2023-LD.jpg"
 ]
 
 var images = [
@@ -30,7 +31,8 @@ var images = [
 "./images/SLC-Jordanelle-Reservoir_854_FH_q60_30MAY2023.jpg",
 "./images/SLC-Willow-Creek_891_FH_q60_30MAY2023.jpg",
 "./images/Carrs-Park_340_PSFH_q60_03JUN2023.jpg",
-"./images/Collaroy_419_PSFH_q60_18JUN2023.jpg"
+"./images/Collaroy_419_PSFH_q60_18JUN2023.jpg",
+"./images/WRyde_476__PSGFH_q60_08DEC2023.jpg"
 ]
 
 /* list corresponding sky labels */
@@ -48,7 +50,8 @@ var labels = [
 "Jordanelle Reservoir, Heber City, Utah, USA",
 "Willow Creek Park, Park City, Utah, USA",
 "Carss Park, Carss Park, New South Wales, Australia",
-"Collaroy Beach, Collaroy, New South Wales, Australia"
+"Collaroy Beach, Collaroy, New South Wales, Australia",
+"Bell Park, West Ryde, New South Wales, Australia"
 ]
 
 /* gets sky from URL, drops trailing zero. If invalid or blank, returns null */
