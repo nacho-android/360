@@ -72,12 +72,14 @@ var skysrcprev = -1
 var skysrc = -1
 
 /* returns a random integer up to length of images variable list, corresponding to a sky that is not the previously selected sky, then calls SkySelect to change the sky and label */
+/* Not used for iOS */
 function randomSky() {
   while (skysrc == skysrcprev) {skysrc = Math.floor(Math.random() * images.length)}
   SkySelect(skysrc)
 }
 
 /* Changes to user-selected sky and label, clears the URL */
+/* Modified for iOS to not clear the URL */
 function SkySelect(x) {
   skysrc = x
   console.log(skysrc)
@@ -87,14 +89,14 @@ function SkySelect(x) {
   document.getElementById("toplabel").innerHTML = labels[skysrc]
   document.getElementById("copyLink").value = "https://www.360worlds.org/ios.html?sky=" + skysrc
   resetZoom()
-  history.pushState(null, null, "ios.html")
 }
 
 /* checks for a valid sky request in the URL and loads it, else loads a randomsky on first load */
+/* Modified for iOS to return first sky on null or second sky on invalid skyURL, instead of random */
 function firstSky() {
-  if (skyURL == null) {randomSky()}
+  if (skyURL == null) {SkySelect(0)}
   else if ((skyURL <= (images.length-1)) && (skyURL > -1)) {SkySelect(skyURL)}
-  else {randomSky()}
+  else {SkySelect(1)}
 }
 
 /* copies URL to clipboard */
