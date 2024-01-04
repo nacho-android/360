@@ -79,13 +79,12 @@ function randomSky() {
 }
 
 /* Changes to user-selected sky and label, clears the URL */
-/* Modified for iOS to not clear the URL */
+/* Modified for iOS to not clear the URL or have loading image */
 function SkySelect(x) {
   skysrc = x
   console.log(skysrc)
   skysrcprev = skysrc
-  $("#sky").attr("src", LDimages[skysrc])
-  setTimeout(() => {$("#sky").attr("src", images[skysrc])},500)
+  $("#sky").attr("src", images[skysrc])
   document.getElementById("toplabel").innerHTML = labels[skysrc]
   document.getElementById("copyLink").value = "https://www.360worlds.org/ios.html?sky=" + skysrc
   resetZoom()
