@@ -1,48 +1,134 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>360 Worlds</title>
-    <meta name="description" content="360 Worlds showcases 360° aerial drone panoromas from around the world">
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SC4JLLVLX9"></script>
-    <script>
+<head>
+<title>360 Worlds</title>
+<meta charset="utf-8">
+<meta name="viewport" content="target-densitydpi=device-dpi, width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui" />
+<meta name="description" content="360 Worlds showcases 360° aerial drone panoromas from around the world">
+<style> @-ms-viewport { width: device-width; } </style>
+<link rel="stylesheet" href="vendor/reset.min.css">
+<link rel="stylesheet" href="style.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SC4JLLVLX9"></script>
+<script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-SC4JLLVLX9');
-    </script>
-    <script src="./js/aframe.min.js"></script>
-    <script src="./js/jquery.min.js"></script>
-    <script src="./js/other.js"></script>
-    <script src="./js/skyjs.js"></script>
-    <script src="./js/xymobile.js"></script>
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-    <a-scene loading-screen="dotsColor: #19367D; backgroundColor: #757575" vr-mode-ui="enabled: false">
-      <a-entity id="cam" camera="zoom: 1" look-controls="reverseMouseDrag: true; magicWindowTrackingEnabled: false"></a-entity>
-      <a-sky id="sky" rotation="0 0 0" geometry="segmentsHeight:128; segmentsWidth:256"></a-sky>
-      <a-entity id="mouseCursor" cursor="rayOrigin: mouse"></a-entity>
-      <a-entity laser-controls="hand: right"></a-entity>      
-      <div w3-include-html="menu.html"></div>
-      <div class="top label">
-		<div id="faq2">
-		<ul>
-		<li><div class="hov"><input type="checkbox" checked>
-			<i></i><h5 id="toplabel">Loading...</h5>
-				<p>Refresh the page for a random location or select from the menu on the left
-				<br>Look around by dragging the screen
-				<br>Zoom in/out with your mouse scroll wheel
-				<br><input type="text" value="" id="copyLink" class="copybox">  <button onclick="copyURL()" class="copybutton hov_go">Copy Link</button></p>
-		</div></li>
-		</ul>
-		</div>
-      </div>
-    </a-scene>
-    <script>
-      includeHTML();
-      firstSky();
-    </script>
-  </body>
+</script>
+</head>
+<body class="multiple-scenes ">
+
+<div id="pano"></div>
+
+<div id="sceneList">
+  <ul class="scenes">
+
+<button class="collapsible">Australia</button>
+	<div class="content">
+	      <a href="javascript:void(0)" class="scene" data-id="14-wryde_476__psgfh_q60_08dec2023"><li class="text">Bell Park</li></a>
+	      <a href="javascript:void(0)" class="scene" data-id="15-carrs-park_340_psfh_q60_03jun2023"><li class="text">Carss Park</li></a>
+	      <a href="javascript:void(0)" class="scene" data-id="16-collaroy_419_psfh_q60_18jun2023"><li class="text">Collaroy Beach</li></a>
+	      <a href="javascript:void(0)" class="scene" data-id="0-cb_506__psgfh_q60_14jan2024"><li class="text">Culburra Beach</li></a>
+	      <a href="javascript:void(0)" class="scene" data-id="17-coral-sea-20200223_fh_q60_30may2023"><li class="text">Holmes Reef</li></a>
+	      <a href="javascript:void(0)" class="scene" data-id="4-kc_482__psgfh_q60_02jan2024"><li class="text">Killcare Beach (low altitude)</li></a>
+	      <a href="javascript:void(0)" class="scene" data-id="5-kc_495__psgfh_q60_02jan2024"><li class="text">Killcare Beach (high altitude)</li></a>
+	      <a href="javascript:void(0)" class="scene" data-id="7-maroubra-20221109_fh_q60_30may2023"><li class="text">Maroubra Beach</li></a>
+	</div>
+
+<button class="collapsible">Japan</button>
+	<div class="content">
+	      <a href="javascript:void(0)" class="scene" data-id="8-mashibayashi_143_psfh_q60_30may2023"><li class="text">Mashibayashi</li></a>
+	      <a href="javascript:void(0)" class="scene" data-id="10-owakudani_066_psfh_q60_23may2023"><li class="text">Owakudani</li></a>
+	</div>
+
+<button class="collapsible">New Zealand</button>
+	<div class="content">
+	      <a href="javascript:void(0)" class="scene" data-id="9-nz-clyde_498_fh_q60_30may2023"><li class="text">Clutha River</li></a>
+	</div>
+
+<button class="collapsible">South Korea</button>
+	<div class="content">
+	      <a href="javascript:void(0)" class="scene" data-id="1-gamcheon_228_psfh_q60_30may2023"><li class="text">Gamcheon Culture Village</li></a>
+	      <a href="javascript:void(0)" class="scene" data-id="3-gwangalli_185_psfh_q60_30may2023"><li class="text">Gwangalli Beach</li></a>
+	</div>
+
+<button class="collapsible">USA</button>
+	<div class="content">
+	      <a href="javascript:void(0)" class="scene" data-id="6-ljm_751_fh_q60_30may2023"><li class="text">NC: Lake Johnson</li></a>
+	      <a href="javascript:void(0)" class="scene" data-id="13-slc-jordanelle-reservoir_854_fh_q60_30may2023"><li class="text">UT: Jordanelle Reservoir</li></a>
+	      <a href="javascript:void(0)" class="scene" data-id="12-slc_840_fh_q60_30may2023"><li class="text">UT: Little Dell Reservoir</li></a>
+	      <a href="javascript:void(0)" class="scene" data-id="11-slc_817_fh_q60_30may2023"><li class="text">UT: University of Utah</li></a>
+	      <a href="javascript:void(0)" class="scene" data-id="2-slc-willow-creek_891_fh_q60_30may2023"><li class="text">UT: Willow Creek Park</li></a>
+	</div>
+  
+  </ul>
+</div>
+
+<div id="titleBar">
+  <p class="sceneName"></p>
+</div>
+
+
+<a href="javascript:void(0)" id="autorotateToggle">
+  <img class="icon off" src="img/play.png">
+  <img class="icon on" src="img/pause.png">
+</a>
+
+
+<a href="javascript:void(0)" id="fullscreenToggle">
+  <img class="icon off" src="img/fullscreen.png">
+  <img class="icon on" src="img/windowed.png">
+</a>
+
+<a href="javascript:void(0)" id="sceneListToggle">
+  <img class="icon off" src="img/expand.png">
+  <img class="icon on" src="img/collapse.png">
+</a>
+
+<a href="javascript:void(0)" id="viewUp" class="viewControlButton viewControlButton-1">
+  <img class="icon" src="img/up.png">
+</a>
+<a href="javascript:void(0)" id="viewDown" class="viewControlButton viewControlButton-2">
+  <img class="icon" src="img/down.png">
+</a>
+<a href="javascript:void(0)" id="viewLeft" class="viewControlButton viewControlButton-3">
+  <img class="icon" src="img/left.png">
+</a>
+<a href="javascript:void(0)" id="viewRight" class="viewControlButton viewControlButton-4">
+  <img class="icon" src="img/right.png">
+</a>
+<a href="javascript:void(0)" id="viewIn" class="viewControlButton viewControlButton-5">
+  <img class="icon" src="img/plus.png">
+</a>
+<a href="javascript:void(0)" id="viewOut" class="viewControlButton viewControlButton-6">
+  <img class="icon" src="img/minus.png">
+</a>
+
+
+<script>
+var coll = document.getElementsByClassName("collapsible");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.maxHeight){
+      content.style.maxHeight = null;
+    } else {
+      content.style.maxHeight = content.scrollHeight + "px";
+    } 
+  });
+}
+</script>
+
+
+<script src="vendor/screenfull.min.js" ></script>
+<script src="vendor/bowser.min.js" ></script>
+<script src="vendor/marzipano.js" ></script>
+<script src="data.js"></script>
+<script src="index.js"></script>
+
+
+</body>
 </html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>360 Worlds</title>
+    <meta name="description" content="360 Worlds showcases 360° aerial drone panoromas from around the world">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SC4JLLVLX9"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-SC4JLLVLX9');
+    </script>
+    <script src="./js/aframe.min.js"></script>
+    <script src="./js/jquery.min.js"></script>
+    <script src="./js/other.js"></script>
+    <script src="./js/skyjs.js"></script>
+    <script src="./js/xymobile.js"></script>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <a-scene loading-screen="dotsColor: #19367D; backgroundColor: #757575" vr-mode-ui="enabled: false">
+      <a-entity id="cam" camera="zoom: 1" look-controls="reverseMouseDrag: true; magicWindowTrackingEnabled: false"></a-entity>
+      <a-sky id="sky" rotation="0 0 0" geometry="segmentsHeight:128; segmentsWidth:256"></a-sky>
+      <a-entity id="mouseCursor" cursor="rayOrigin: mouse"></a-entity>
+      <a-entity laser-controls="hand: right"></a-entity>      
+      <div w3-include-html="menu.html"></div>
+      <div class="top label">
+		<div id="faq2">
+		<ul>
+		<li><div class="hov"><input type="checkbox" checked>
+			<i></i><h5 id="toplabel">Loading...</h5>
+				<p>Refresh the page for a random location or select from the menu on the left
+				<br>Look around by dragging the screen
+				<br>Zoom in/out with your mouse scroll wheel
+				<br><input type="text" value="" id="copyLink" class="copybox">  <button onclick="copyURL()" class="copybutton hov_go">Copy Link</button></p>
+		</div></li>
+		</ul>
+		</div>
+      </div>
+    </a-scene>
+    <script>
+      includeHTML();
+      firstSky();
+    </script>
+  </body>
+</html>
