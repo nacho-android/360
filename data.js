@@ -632,7 +632,7 @@ var APP_DATA = {
     },
     {
       "id": "18-mv_625__psgfh_q95_10mar2024",
-      "name": "Mona Vale Rockpool, New South Wales, Australia",
+      "name": "Mona Vale Rock Pool, New South Wales, Australia",
       "levels": [
         {
           "tileSize": 256,
