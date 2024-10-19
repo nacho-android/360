@@ -387,6 +387,47 @@
   }
 
   // Display the initial scene.
-  switchScene(scenes[21]);
+  
+  // Non-standard Marzipano code below
+  // Function to get the value of the 'sky' parameter from the URL
+  function getSkyParameter() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('sky');
+  }
+
+  // Function to get a random scene index
+  function getRandomSceneIndex() {
+      return Math.floor(Math.random() * scenes.length);
+  }
+
+  // Function to clear the 'sky' parameter from the URL
+  function clearSkyParameter() {
+      const url = new URL(window.location);
+      url.searchParams.delete('sky');
+      window.history.replaceState({}, document.title, url.toString());
+  }
+
+
+  // Get the 'sky' parameter value
+  const skyValue = getSkyParameter();
+
+  // Check if skyValue is not null, then parse it to an integer
+  if (skyValue !== null) {
+      const sceneIndex = parseInt(skyValue, 10);
+      if (!isNaN(sceneIndex) && scenes[sceneIndex]) {
+          // Switch to the corresponding scene
+          switchScene(scenes[sceneIndex]);
+      } else {
+          console.error('Invalid scene index:', sceneIndex);
+          // Fallback to a random scene
+          switchScene(scenes[getRandomSceneIndex()]);
+      }
+      // Clear the 'sky' parameter from the URL
+      clearSkyParameter();
+  } else {
+      console.warn('No sky parameter found in the URL. Loading a random scene.');
+      // Load a random scene
+      switchScene(scenes[getRandomSceneIndex()]);
+  }
 
 })();
