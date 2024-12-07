@@ -350,10 +350,10 @@
   <p>Keep lights off/down and limit interaction to keep as sleepy as possible</p>
   <p>If wakes before 6am, try to resettle using chosen technique until 6:30/7am. If they won't resettle, try to stretch as close as possible to first nap (9am) then limit to shorter nap</p>
   <p>If going out, do it for first morning and third late afternoon nap. Try to have lunchtime/second nap at home (ideally 1.5-2h here).</p>
-  <p>v07DEC2024_1900</p>
+
 
 </details>
-
+<!-- v07DEC2024_2141 -->
 
 <div id="modal-overlay" class="modal-overlay">
   <div class="modal" id="modal">
@@ -383,6 +383,32 @@ allIntervals.forEach(interval => {
   buttonContainer.appendChild(btn);
 });
 
+// Helper functions to handle cookies
+function setCookie(name, value, days=1) {
+  const date = new Date();
+  date.setTime(date.getTime() + (days*24*60*60*1000));
+  const expires = "expires="+date.toUTCString();
+  document.cookie = name + "=" + value + ";" + expires + ";path=/";
+}
+
+function getCookie(name) {
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const ca = decodedCookie.split(';');
+  const prefix = name + "=";
+  for(let i = 0; i < ca.length; i++) {
+    let c = ca[i].trim();
+    if (c.indexOf(prefix) === 0) {
+      return c.substring(prefix.length, c.length);
+    }
+  }
+  return "";
+}
+
+function deleteCookie(name) {
+  document.cookie = name+"=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+}
+
+// Show/hide modals
 function showAlert(message, callback = null) {
   showModal("", message, false, callback);
 }
@@ -438,6 +464,7 @@ function hideModal() {
   overlay.style.display = 'none';
 }
 
+// Updated startTimer to also handle cookie state
 function startTimer(minutes) {
   if (isRunning) {
     showConfirm("A timer is already running. Do you want to start a new timer?", () => {
@@ -466,12 +493,17 @@ function startCustomTimer() {
   }
 }
 
+// Run the timer and store start/end times in cookies
 function runTimer(minutes) {
   clearInterval(countdown);
   const totalSeconds = minutes * 60;
 
   startTime = Date.now();
   endTime = startTime + totalSeconds * 1000;
+
+  // Store in cookies so we can restore after reload
+  setCookie("startTime", startTime);
+  setCookie("endTime", endTime);
 
   isRunning = true;
   updateDisplay();
@@ -497,6 +529,9 @@ function updateDisplay() {
     clearInterval(countdown);
     isRunning = false;
     showAlert('Time to check on Birdie!');
+    // Timer done, clear cookies
+    deleteCookie("startTime");
+    deleteCookie("endTime");
   }
 }
 
@@ -538,16 +573,13 @@ toggleContainer.addEventListener('click', (e) => {
       lbl.classList.add('active');
     });
     updateButtonsVisibility();
-    console.log("Show All clicked");
   } else if (target.id === 'hide-all') {
     document.querySelectorAll('.toggle-label[data-interval]').forEach(lbl => {
       lbl.classList.remove('active');
     });
     updateButtonsVisibility();
-    console.log("Hide All clicked");
   } else if (target.classList.contains('toggle-label') && target.hasAttribute('data-interval')) {
     target.classList.toggle('active');
-    console.log("Toggled:", target.getAttribute('data-interval'), "Active:", target.classList.contains('active'));
     updateButtonsVisibility();
   }
 });
@@ -576,6 +608,30 @@ if (firstRow) {
   const defaultIntervals = [2,4,6]; // Night 1’s intervals
   setTogglesForNight(defaultIntervals);
 }
+
+// On page load, check if we have a running timer stored in cookies
+window.addEventListener('load', () => {
+  const storedStart = getCookie("startTime");
+  const storedEnd = getCookie("endTime");
+
+  if (storedStart && storedEnd) {
+    startTime = parseInt(storedStart, 10);
+    endTime = parseInt(storedEnd, 10);
+    const now = Date.now();
+    if (endTime > now) {
+      // Timer is still valid, resume it
+      isRunning = true;
+      updateDisplay();
+      countdown = setInterval(() => {
+        updateDisplay();
+      }, 1000);
+    } else {
+      // Timer expired already, clear cookies
+      deleteCookie("startTime");
+      deleteCookie("endTime");
+    }
+  }
+});
 </script>
 
 </body>
