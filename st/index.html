@@ -14,7 +14,6 @@
     box-sizing: border-box;
   }
 
-  /* Make h1 the same size as h2 */
   h1, h2 {
     text-align: center;
     margin-bottom: 20px;
@@ -39,7 +38,6 @@
     color: #ccc;
   }
 
-  /* Button styling */
   .timer-button {
     display: inline-flex;
     justify-content: center;
@@ -76,7 +74,6 @@
     min-height: 100px; 
   }
   
-  /* Table styling */
   table {
     width: 100%;
     border-collapse: collapse;
@@ -103,12 +100,10 @@
     cursor: pointer;
   }
 
-  /* Highlight selected row */
   .selected-row {
     background: #333;
   }
 
-  /* Custom interval input */
   .custom-interval-container {
     text-align: center;
     margin-top: 20px;
@@ -151,7 +146,6 @@
     }
   }
 
-  /* Modal Styles for Custom Alerts and Confirms */
   .modal-overlay {
     position: fixed;
     top: 0; left: 0;
@@ -248,9 +242,6 @@
 
 <p class="sleep-cue">Sleep cue: "It's time for bed Birdie. Night night. Love you!"</p>
 
-<!-- Removed the heading "Ferber Method Interval Schedule" -->
-<!-- The instructions box will be moved to the bottom, so we remove it from here -->
-
 <p style="text-align:center; margin-bottom:10px;">Select an interval (in minutes) to begin:</p>
 <div style="text-align:center;" id="button-container"></div>
 
@@ -320,7 +311,6 @@
   <span class="toggle-label" data-interval="30">30 min</span>
 </div>
 
-<!-- Move instructions box to the bottom of the page -->
 <details>
   <summary>Show/Hide Instructions</summary>
   <p>1. Put Birdie in cot, say good night, and walk out of the room</p>
@@ -360,8 +350,10 @@
   <p>Keep lights off/down and limit interaction to keep as sleepy as possible</p>
   <p>If wakes before 6am, try to resettle using chosen technique until 6:30/7am. If they won't resettle, try to stretch as close as possible to first nap (9am) then limit to shorter nap</p>
   <p>If going out, do it for first morning and third late afternoon nap. Try to have lunchtime/second nap at home (ideally 1.5-2h here).</p>
+  <p>v07DEC2024_1900</p>
 
 </details>
+
 
 <div id="modal-overlay" class="modal-overlay">
   <div class="modal" id="modal">
@@ -373,11 +365,11 @@
 
 <script>
 let countdown;
-let timeLeft = 0; 
+let startTime;
+let endTime;
 let isRunning = false;
 let selectedRow = null;
 
-// Updated allIntervals array with the new intervals:
 const allIntervals = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,25,30];
 
 const buttonContainer = document.getElementById('button-container');
@@ -427,7 +419,6 @@ function showModal(title, message, isConfirm = false, yesCallback = null, noCall
       if (noCallback) noCallback();
     };
     modalButtons.appendChild(noBtn);
-
   } else {
     const okBtn = document.createElement('button');
     okBtn.textContent = 'OK';
@@ -448,55 +439,71 @@ function hideModal() {
 }
 
 function startTimer(minutes) {
-    if (isRunning) {
-        showConfirm("A timer is already running. Do you want to start a new timer?", () => {
-            runTimer(minutes);
-        });
-    } else {
-        runTimer(minutes);
-    }
+  if (isRunning) {
+    showConfirm("A timer is already running. Do you want to start a new timer?", () => {
+      runTimer(minutes);
+    });
+  } else {
+    runTimer(minutes);
+  }
 }
 
 function startCustomTimer() {
-    const customInput = document.getElementById('custom-interval');
-    const minutes = parseInt(customInput.value, 10);
+  const customInput = document.getElementById('custom-interval');
+  const minutes = parseInt(customInput.value, 10);
 
-    if (isNaN(minutes) || minutes <= 0) {
-      showAlert('Please enter a valid number of minutes.');
-      return;
-    }
+  if (isNaN(minutes) || minutes <= 0) {
+    showAlert('Please enter a valid number of minutes.');
+    return;
+  }
 
-    if (isRunning) {
-        showConfirm("A timer is already running. Do you want to start a new timer?", () => {
-            runTimer(minutes);
-        });
-    } else {
-        runTimer(minutes);
-    }
+  if (isRunning) {
+    showConfirm("A timer is already running. Do you want to start a new timer?", () => {
+      runTimer(minutes);
+    });
+  } else {
+    runTimer(minutes);
+  }
 }
 
 function runTimer(minutes) {
-    clearInterval(countdown);
-    timeLeft = minutes * 60;
-    const display = document.getElementById('display');
-    display.textContent = formatTime(timeLeft);
-    isRunning = true;
+  clearInterval(countdown);
+  const totalSeconds = minutes * 60;
 
-    countdown = setInterval(() => {
-      timeLeft--;
-      display.textContent = formatTime(timeLeft);
-      if (timeLeft <= 0) {
-        clearInterval(countdown);
-        isRunning = false;
-        showAlert('Time to check on Birdie!');
-      }
-    }, 1000);
+  startTime = Date.now();
+  endTime = startTime + totalSeconds * 1000;
+
+  isRunning = true;
+  updateDisplay();
+
+  countdown = setInterval(() => {
+    updateDisplay();
+  }, 1000);
+}
+
+function updateDisplay() {
+  const now = Date.now();
+  const timeLeftMs = endTime - now;
+  let timeLeftSeconds = Math.round(timeLeftMs / 1000);
+
+  if (timeLeftSeconds < 0) {
+    timeLeftSeconds = 0;
+  }
+
+  const display = document.getElementById('display');
+  display.textContent = formatTime(timeLeftSeconds);
+
+  if (timeLeftSeconds <= 0) {
+    clearInterval(countdown);
+    isRunning = false;
+    showAlert('Time to check on Birdie!');
+  }
 }
 
 function formatTime(seconds) {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s < 10 ? '0' : ''}${s}`;
 }
 
 // Toggles
@@ -514,9 +521,7 @@ function updateButtonsVisibility() {
 
 function setTogglesForNight(intervals) {
   const allToggles = document.querySelectorAll('.toggle-label[data-interval]');
-  // Turn all off first
   allToggles.forEach(tg => tg.classList.remove('active'));
-  // Turn on those for current night
   intervals.forEach(interval => {
     const toggle = document.querySelector(`.toggle-label[data-interval="${interval}"]`);
     if (toggle) {
@@ -529,20 +534,20 @@ function setTogglesForNight(intervals) {
 toggleContainer.addEventListener('click', (e) => {
   const target = e.target;
   if (target.id === 'show-all') {
-    // Activate all toggles
     document.querySelectorAll('.toggle-label[data-interval]').forEach(lbl => {
       lbl.classList.add('active');
     });
     updateButtonsVisibility();
+    console.log("Show All clicked");
   } else if (target.id === 'hide-all') {
-    // Deactivate all toggles
     document.querySelectorAll('.toggle-label[data-interval]').forEach(lbl => {
       lbl.classList.remove('active');
     });
     updateButtonsVisibility();
+    console.log("Hide All clicked");
   } else if (target.classList.contains('toggle-label') && target.hasAttribute('data-interval')) {
-    // Individual toggle
     target.classList.toggle('active');
+    console.log("Toggled:", target.getAttribute('data-interval'), "Active:", target.classList.contains('active'));
     updateButtonsVisibility();
   }
 });
