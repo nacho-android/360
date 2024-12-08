@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content="Simplify your sleep training journey with the Sleep Training Interval Timer. Choose from preset or custom intervals to gently help your baby learn to self-soothe and sleep better. Designed for smoother and stress-free sleep training." />
 <title>Sleep Training Interval Timer</title>
 <style>
   body {
@@ -36,6 +37,7 @@
     font-weight: bold;
     font-size: 18px;
     color: #ccc;
+    outline: none;
   }
 
   .timer-button {
@@ -234,13 +236,83 @@
     margin-top:0; 
     margin-bottom:5px; 
   }
+
+  .edit-section-fields {
+    margin-top: 20px;
+  }
+
+  .edit-section-fields label {
+    display: block;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .edit-section-fields input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    background: #2e2e2e;
+    border: 1px solid #444;
+    color: #ccc;
+    border-radius: 4px;
+  }
+
+  .edit-intervals-table {
+    margin-top: 0px;
+  }
+
+  .edit-intervals-table select {
+    background: #2e2e2e;
+    color: #ccc;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 5px;
+  }
+.bmc-btn {
+    min-width: 210px;
+    color: #000000;
+    background-color: #448aff !important;
+    height: 60px;
+    border-radius: 8px;
+    font-size: 26px;
+    font-weight: Normal;
+    border: none;
+    padding: 0px 8px;
+    line-height: 15px;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center;
+    font-family: 'Cookie', cursive !important;
+    -webkit-box-sizing: border-box !important;
+    box-sizing: border-box !important;
+}
+
+.bmc-btn:hover, .bmc-btn:active, .bmc-btn:focus {
+    text-decoration: none !important;
+    cursor: pointer;
+}
+
+.bmc-btn-text {
+   margin-left: 8px;
+   display: inline-block;
+   line-height: 0;
+   width: 100%;
+   flex-shrink: 0;
+   font-family: [FONT] !important;
+}
+@font-face {
+  font-family: 'Cookie';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/s/cookie/v21/syky-y18lb0tSbf9kgqS.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 </style>
 </head>
 <body>
 
 <h1>Sleep Training Interval Timer</h1>
 
-<p class="sleep-cue">Sleep cue: "It's time for bed Baby. Goodnight. I love you!"</p>
+<p class="sleep-cue" id="sleep-cue-text"></p>
 
 <p style="text-align:center; margin-bottom:10px;">Select an interval (in minutes) to begin:</p>
 <div style="text-align:center;" id="button-container"></div>
@@ -261,27 +333,7 @@
     <th>Second Wait</th>
     <th>Subsequent Waits</th>
   </tr>
-  <tr data-intervals="2,4,6">
-    <td>1</td><td>2 min</td><td>4 min</td><td>6 min</td>
-  </tr>
-  <tr data-intervals="4,6,8">
-    <td>2</td><td>4 min</td><td>6 min</td><td>8 min</td>
-  </tr>
-  <tr data-intervals="5,9,12">
-    <td>3</td><td>5 min</td><td>9 min</td><td>12 min</td>
-  </tr>
-  <tr data-intervals="6,10,15">
-    <td>4</td><td>6 min</td><td>10 min</td><td>15 min</td>
-  </tr>
-  <tr data-intervals="9,15,20">
-    <td>5</td><td>9 min</td><td>15 min</td><td>20 min</td>
-  </tr>
-  <tr data-intervals="17,20,25">
-    <td>6</td><td>17 min</td><td>20 min</td><td>25 min</td>
-  </tr>
-  <tr data-intervals="20,25,30">
-    <td>7</td><td>20 min</td><td>25 min</td><td>30 min</td>
-  </tr>
+  <!-- Rows will be rendered dynamically -->
 </table>
 
 <div class="toggle-container" id="toggle-container">
@@ -315,16 +367,17 @@
   <summary>Instructions for Sleep Training</summary>
   <h3>Using the Timer</h3>
   <p>
-    1. <strong>Select a Preset Interval:</strong> Click on one of the interval rows (e.g., Night 1: 2, 4, 6 minutes).<br>
+    1. <strong>Select a Preset Interval:</strong> Click on one of the interval rows (e.g., Night 1: 2, 4, 6 minutes). Select an interval to start the timer.<br>
     2. <strong>Enter a Custom Interval:</strong> Type the desired number of minutes in the custom input field and click "Start Custom."<br>
     3. <strong>Monitor the Timer:</strong> The timer will display the remaining time. Wait until it reaches zero before intervening.<br>
     4. <strong>Resume Automatically:</strong> If the page is reloaded or reopened, the timer will pick up where it left off.<br>
-    5. <strong>End of Timer:</strong> A notification will alert you when it’s time to check on your baby.
+    5. <strong>End of Timer:</strong> A notification will alert you when it’s time to check on your baby.<br><br>
+    <strong>Editing Settings:</strong> Expand the "Edit Settings" section below to change the sleep cue, end timer notification, and interval schedule. Your changes will be saved and remembered for future visits.
   </p>
   <hr>
   <h3>Sleep Training Instructions</h3>
   <p>
-    1. <strong>Getting Started:</strong> Place your baby in their crib and say a consistent goodnight cue. Leave the room once they are settled.<br>
+    1. <strong>Getting Started:</strong> Place your baby in their crib and say a consistent sleep cue. Leave the room once they are settled.<br>
     2. <strong>When the Baby Cries:</strong> Start the timer using the selected interval. Wait until the timer ends before re-entering the room.<br>
     3. <strong>Check and Soothe:</strong> When the timer ends, enter the room briefly to reassure your baby (1–2 minutes max). Avoid overstimulation. Gradually reduce interventions over a few days.<br>
     4. <strong>Restart the Timer:</strong> If your baby continues crying, leave the room and start the next interval timer. Repeat the process until they fall asleep.<br>
@@ -337,8 +390,37 @@
     - Avoid picking up your baby unless absolutely necessary. If you must, keep interactions calming and brief.<br>
     - Consistency is key! Use the same approach for a few days to see results.
   </p>
+<div><a class="bmc-btn" target="_blank" href="https://buymeacoffee.com/sleepyparentbrews">☕<span class="bmc-btn-text">Support a Fellow Parent</span></a></div>
 </details>
-<!-- v07DEC2024_2142 -->
+<!-- v08DEC2024_2206 -->
+
+<details id="edit-section">
+  <summary>Edit Settings</summary>
+  <div class="edit-section-fields">
+    <label>
+      Sleep Cue:
+      <input type="text" id="edit-sleep-cue" style="margin-top: 4px;" />
+    </label>
+    <label>
+      End Timer Notification:
+      <input type="text" id="edit-end-notification" style="margin-top: 4px;" />
+    </label>
+    <label>
+      Sleep Intervals:
+    </label>
+    <div class="edit-intervals-table">
+      <table>
+        <tr>
+          <th>Night</th>
+          <th>First Wait</th>
+          <th>Second Wait</th>
+          <th>Subsequent Waits</th>
+        </tr>
+        <tbody id="edit-intervals-body"></tbody>
+      </table>
+    </div>
+  </div>
+</details>
 
 <div id="modal-overlay" class="modal-overlay">
   <div class="modal" id="modal">
@@ -355,25 +437,54 @@ let endTime;
 let isRunning = false;
 let selectedRow = null;
 
+// Default intervals data (Night 1 to Night 7)
+let intervalsData = [
+  [2,4,6],
+  [4,6,8],
+  [5,9,12],
+  [6,10,15],
+  [9,15,20],
+  [17,20,25],
+  [20,25,30]
+];
+
 const allIntervals = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,25,30];
 
-const buttonContainer = document.getElementById('button-container');
-allIntervals.forEach(interval => {
-  const btn = document.createElement('button');
-  btn.className = 'timer-button';
-  btn.id = `btn-${interval}`;
-  btn.textContent = interval;
-  btn.onclick = () => startTimer(interval);
-  btn.style.display = 'none'; 
-  buttonContainer.appendChild(btn);
-});
+let sleepCue = "It's time for bed Baby. Goodnight. I love you!";
+let endTimerNotification = "Time to check on Baby!";
+
+// Load settings from cookies if available
+function loadSettingsFromCookies() {
+  const savedSleepCue = getCookie("sleepCue");
+  const savedEndNotification = getCookie("endTimerNotification");
+  const savedIntervals = getCookie("intervalsData");
+
+  if (savedSleepCue) {
+    sleepCue = savedSleepCue;
+  }
+
+  if (savedEndNotification) {
+    endTimerNotification = savedEndNotification;
+  }
+
+  if (savedIntervals) {
+    try {
+      const parsed = JSON.parse(savedIntervals);
+      if (Array.isArray(parsed) && parsed.length === intervalsData.length) {
+        intervalsData = parsed;
+      }
+    } catch(e) {
+      console.error("Error parsing intervals cookie:", e);
+    }
+  }
+}
 
 // Helper functions to handle cookies
-function setCookie(name, value, days=1) {
+function setCookie(name, value, days=365) {
   const date = new Date();
   date.setTime(date.getTime() + (days*24*60*60*1000));
   const expires = "expires="+date.toUTCString();
-  document.cookie = name + "=" + value + ";" + expires + ";path=/";
+  document.cookie = name + "=" + encodeURIComponent(value) + ";" + expires + ";path=/";
 }
 
 function getCookie(name) {
@@ -449,7 +560,7 @@ function hideModal() {
   overlay.style.display = 'none';
 }
 
-// Updated startTimer to also handle cookie state
+// Timer functions
 function startTimer(minutes) {
   if (isRunning) {
     showConfirm("A timer is already running. Do you want to start a new timer?", () => {
@@ -478,7 +589,6 @@ function startCustomTimer() {
   }
 }
 
-// Run the timer and store start/end times in cookies
 function runTimer(minutes) {
   clearInterval(countdown);
   const totalSeconds = minutes * 60;
@@ -486,7 +596,6 @@ function runTimer(minutes) {
   startTime = Date.now();
   endTime = startTime + totalSeconds * 1000;
 
-  // Store in cookies so we can restore after reload
   setCookie("startTime", startTime);
   setCookie("endTime", endTime);
 
@@ -510,11 +619,10 @@ function updateDisplay() {
   const display = document.getElementById('display');
   display.textContent = formatTime(timeLeftSeconds);
 
-  if (timeLeftSeconds <= 0) {
+  if (timeLeftSeconds <= 0 && isRunning) {
     clearInterval(countdown);
     isRunning = false;
-    showAlert('Time to check on Baby!');
-    // Timer done, clear cookies
+    showAlert(endTimerNotification);
     deleteCookie("startTime");
     deleteCookie("endTime");
   }
@@ -526,7 +634,7 @@ function formatTime(seconds) {
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 }
 
-// Toggles
+// Toggle and interval button visibility
 const toggleContainer = document.getElementById('toggle-container');
 
 function updateButtonsVisibility() {
@@ -551,6 +659,7 @@ function setTogglesForNight(intervals) {
   updateButtonsVisibility();
 }
 
+// Event for toggles
 toggleContainer.addEventListener('click', (e) => {
   const target = e.target;
   if (target.id === 'show-all') {
@@ -569,33 +678,135 @@ toggleContainer.addEventListener('click', (e) => {
   }
 });
 
-// Table row click handling
-const scheduleTable = document.getElementById('schedule-table');
-const rows = scheduleTable.querySelectorAll('tr[data-intervals]');
-rows.forEach(row => {
-  row.addEventListener('click', () => {
-    if (selectedRow) {
-      selectedRow.classList.remove('selected-row');
-    }
-    row.classList.add('selected-row');
-    selectedRow = row;
+// Render intervals table
+function renderScheduleTable() {
+  const scheduleTable = document.getElementById('schedule-table');
+  // remove existing rows (except header)
+  scheduleTable.querySelectorAll('tr[data-intervals]').forEach(r => r.remove());
 
-    const intervals = row.getAttribute('data-intervals').split(',').map(x => parseInt(x.trim(),10));
-    setTogglesForNight(intervals);
+  intervalsData.forEach((nightIntervals, index) => {
+    const row = document.createElement('tr');
+    row.setAttribute('data-intervals', nightIntervals.join(','));
+    row.innerHTML = `
+      <td>${index+1}</td>
+      <td>${nightIntervals[0]} min</td>
+      <td>${nightIntervals[1]} min</td>
+      <td>${nightIntervals[2]} min</td>
+    `;
+
+    row.addEventListener('click', () => {
+      if (selectedRow) {
+        selectedRow.classList.remove('selected-row');
+      }
+      row.classList.add('selected-row');
+      selectedRow = row;
+      setTogglesForNight(nightIntervals);
+    });
+
+    scheduleTable.appendChild(row);
   });
-});
 
-// By default, select Night 1’s row and intervals
-const firstRow = scheduleTable.querySelector('tr[data-intervals]');
-if (firstRow) {
-  selectedRow = firstRow;
-  firstRow.classList.add('selected-row');
-  const defaultIntervals = [2,4,6]; // Night 1’s intervals
-  setTogglesForNight(defaultIntervals);
+  // By default, select Night 1 if not selected
+  if (!selectedRow && scheduleTable.querySelector('tr[data-intervals]')) {
+    const firstRow = scheduleTable.querySelector('tr[data-intervals]');
+    firstRow.classList.add('selected-row');
+    selectedRow = firstRow;
+    setTogglesForNight(intervalsData[0]);
+  }
 }
 
-// On page load, check if we have a running timer stored in cookies
+// Render buttons based on toggles
+const buttonContainer = document.getElementById('button-container');
+allIntervals.forEach(interval => {
+  const btn = document.createElement('button');
+  btn.className = 'timer-button';
+  btn.id = `btn-${interval}`;
+  btn.textContent = interval;
+  btn.onclick = () => startTimer(interval);
+  btn.style.display = 'none'; 
+  buttonContainer.appendChild(btn);
+});
+
+// Edit section rendering
+function renderEditIntervalsTable() {
+  const editBody = document.getElementById('edit-intervals-body');
+  editBody.innerHTML = '';
+  intervalsData.forEach((rowData, i) => {
+    const tr = document.createElement('tr');
+    const nightCell = document.createElement('td');
+    nightCell.textContent = i+1;
+    tr.appendChild(nightCell);
+
+    rowData.forEach((val, j) => {
+      const td = document.createElement('td');
+      const select = document.createElement('select');
+      allIntervals.forEach(optVal => {
+        const opt = document.createElement('option');
+        opt.value = optVal;
+        opt.textContent = optVal + " min";
+        if (optVal === val) opt.selected = true;
+        select.appendChild(opt);
+      });
+
+      select.addEventListener('change', () => {
+        intervalsData[i][j] = parseInt(select.value, 10);
+        updateIntervals();
+      });
+
+      td.appendChild(select);
+      tr.appendChild(td);
+    });
+
+    editBody.appendChild(tr);
+  });
+}
+
+// Update intervals and persist to cookie
+function updateIntervals() {
+  // Update main table
+  renderScheduleTable();
+  // Save to cookie
+  setCookie("intervalsData", JSON.stringify(intervalsData));
+  // If a row is selected, we reapply toggles
+  if (selectedRow) {
+    const intervals = selectedRow.getAttribute('data-intervals').split(',').map(x=>parseInt(x,10));
+    setTogglesForNight(intervals);
+  }
+}
+
+function updateTexts() {
+  const sleepCueTextEl = document.getElementById('sleep-cue-text');
+  sleepCueTextEl.textContent = "Sleep cue: \"" + sleepCue + "\"";
+}
+
+function saveTextsToCookies() {
+  setCookie("sleepCue", sleepCue);
+  setCookie("endTimerNotification", endTimerNotification);
+}
+
+// On page load, check if we have a running timer or saved settings
 window.addEventListener('load', () => {
+  loadSettingsFromCookies();
+  updateTexts();
+  renderScheduleTable();
+  renderEditIntervalsTable();
+
+  // Populate edit text fields
+  document.getElementById('edit-sleep-cue').value = sleepCue;
+  document.getElementById('edit-end-notification').value = endTimerNotification;
+
+  // Add event listeners to text fields to save changes
+  document.getElementById('edit-sleep-cue').addEventListener('input', (e) => {
+    sleepCue = e.target.value;
+    updateTexts();
+    saveTextsToCookies();
+  });
+
+  document.getElementById('edit-end-notification').addEventListener('input', (e) => {
+    endTimerNotification = e.target.value;
+    saveTextsToCookies();
+  });
+
   const storedStart = getCookie("startTime");
   const storedEnd = getCookie("endTime");
 
