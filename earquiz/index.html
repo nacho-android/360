@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Ear Canal Quiz</title>
+  <!-- Ensure mobile responsiveness -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Load Firebase libraries -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDMOujthKTRne8t-GxN5T8fZDYiYdvgCl8",
+    authDomain: "ear-quiz.firebaseapp.com",
+    databaseURL: "https://ear-quiz-default-rtdb.firebaseio.com",
+    projectId: "ear-quiz",
+    storageBucket: "ear-quiz.firebasestorage.app",
+    messagingSenderId: "139171233343",
+    appId: "1:139171233343:web:60db4ab5536e0ac06fc28a"
+  };
+    firebase.initializeApp(firebaseConfig);
+    var database = firebase.database();
+  </script>
+  <style>
+    /* Mobile-friendly responsive styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+      padding: 10px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .question {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    select, input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 18px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ear Canal Quiz</h1>
+  <form id="quizForm">
+    <label for="name">Your Name:</label>
+    <input type="text" id="name" required placeholder="Enter your name">
+
+    <!-- Question 1 -->
+    <div class="question">
+      <label for="q1">Ear Canal 1:</label>
+      <select id="q1" required>
+        <option value="">--Select--</option>
+        <option value="Alan">Alan</option>
+        <option value="Alan's Cat">Alan's Cat</option>
+        <option value="ChatGPT">ChatGPT</option>
+        <option value="Emily">Emily</option>
+        <option value="Ivy">Ivy</option>
+        <option value="Max">Max</option>
+        <option value="Rat">Rat</option>
+      </select>
+    </div>
+
+    <!-- Question 2 -->
+    <div class="question">
+      <label for="q2">Ear Canal 2:</label>
+      <select id="q2" required>
+        <option value="">--Select--</option>
+        <option value="Alan">Alan</option>
+        <option value="Alan's Cat">Alan's Cat</option>
+        <option value="ChatGPT">ChatGPT</option>
+        <option value="Emily">Emily</option>
+        <option value="Ivy">Ivy</option>
+        <option value="Max">Max</option>
+        <option value="Rat">Rat</option>
+      </select>
+    </div>
+
+    <!-- Question 3 -->
+    <div class="question">
+      <label for="q3">Ear Canal 3:</label>
+      <select id="q3" required>
+        <option value="">--Select--</option>
+        <option value="Alan">Alan</option>
+        <option value="Alan's Cat">Alan's Cat</option>
+        <option value="ChatGPT">ChatGPT</option>
+        <option value="Emily">Emily</option>
+        <option value="Ivy">Ivy</option>
+        <option value="Max">Max</option>
+        <option value="Rat">Rat</option>
+      </select>
+    </div>
+
+    <!-- Question 4 -->
+    <div class="question">
+      <label for="q4">Ear Canal 4:</label>
+      <select id="q4" required>
+        <option value="">--Select--</option>
+        <option value="Alan">Alan</option>
+        <option value="Alan's Cat">Alan's Cat</option>
+        <option value="ChatGPT">ChatGPT</option>
+        <option value="Emily">Emily</option>
+        <option value="Ivy">Ivy</option>
+        <option value="Max">Max</option>
+        <option value="Rat">Rat</option>
+      </select>
+    </div>
+
+    <!-- Question 5 -->
+    <div class="question">
+      <label for="q5">Ear Canal 5:</label>
+      <select id="q5" required>
+        <option value="">--Select--</option>
+        <option value="Alan">Alan</option>
+        <option value="Alan's Cat">Alan's Cat</option>
+        <option value="ChatGPT">ChatGPT</option>
+        <option value="Emily">Emily</option>
+        <option value="Ivy">Ivy</option>
+        <option value="Max">Max</option>
+        <option value="Rat">Rat</option>
+      </select>
+    </div>
+
+    <!-- Question 6 -->
+    <div class="question">
+      <label for="q6">Ear Canal 6:</label>
+      <select id="q6" required>
+        <option value="">--Select--</option>
+        <option value="Alan">Alan</option>
+        <option value="Alan's Cat">Alan's Cat</option>
+        <option value="ChatGPT">ChatGPT</option>
+        <option value="Emily">Emily</option>
+        <option value="Ivy">Ivy</option>
+        <option value="Max">Max</option>
+        <option value="Rat">Rat</option>
+      </select>
+    </div>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    // Define the correct answers for each question.
+    // (Update these values to match your actual correct answers.)
+    const correctAnswers = {
+      q1: "Max",
+      q2: "Emily",
+      q3: "Alan",
+      q4: "Ivy",
+      q5: "Rat",
+      q6: "ChatGPT"
+    };
+
+    document.getElementById('quizForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Get user name and answers
+      const name = document.getElementById('name').value.trim();
+      const answers = {
+        q1: document.getElementById('q1').value,
+        q2: document.getElementById('q2').value,
+        q3: document.getElementById('q3').value,
+        q4: document.getElementById('q4').value,
+        q5: document.getElementById('q5').value,
+        q6: document.getElementById('q6').value,
+      };
+
+      // Calculate the score
+      let score = 0;
+      for (let key in correctAnswers) {
+        if (answers[key] === correctAnswers[key]) {
+          score++;
+        }
+      }
+
+      // Record the submission time (used for tie-breaking)
+      const submissionTime = Date.now();
+
+      // Prepare data to save
+      const submissionData = {
+        name: name,
+        answers: answers,
+        score: score,
+        submissionTime: submissionTime
+      };
+
+      // Save the submission under a “submissions” node.
+      const newSubmissionRef = database.ref('submissions').push();
+      newSubmissionRef.set(submissionData, function(error) {
+        if (error) {
+          alert("Error saving data. Please try again.");
+        } else {
+          // Redirect to result page with the submission key as a query parameter.
+          window.location.href = "result.html?id=" + newSubmissionRef.key;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

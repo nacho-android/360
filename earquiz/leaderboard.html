@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Leaderboard</title>
+  <!-- Mobile-friendly meta tag -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Firebase libraries -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #74ABE2, #5563DE);
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    table {
+      width: 90%;
+      max-width: 600px;
+      margin: 0 auto;
+      border-collapse: collapse;
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    th {
+      background-color: rgba(0, 0, 0, 0.3);
+      font-size: 18px;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    /* Highlight the top-ranked row */
+    tr.top-rank {
+      background-color: rgba(255, 215, 0, 0.5);
+      font-weight: bold;
+    }
+    .crown {
+      font-size: 20px;
+      margin-left: 5px;
+    }
+  </style>
+  <script>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDMOujthKTRne8t-GxN5T8fZDYiYdvgCl8",
+    authDomain: "ear-quiz.firebaseapp.com",
+    databaseURL: "https://ear-quiz-default-rtdb.firebaseio.com",
+    projectId: "ear-quiz",
+    storageBucket: "ear-quiz.firebasestorage.app",
+    messagingSenderId: "139171233343",
+    appId: "1:139171233343:web:60db4ab5536e0ac06fc28a"
+  };
+    firebase.initializeApp(firebaseConfig);
+    var database = firebase.database();
+  </script>
+</head>
+<body>
+  <h1>Leaderboard</h1>
+  <div id="leaderboard"></div>
+
+  <script>
+    function updateLeaderboard() {
+      database.ref('submissions').once('value').then(function(snapshot) {
+        const submissions = [];
+        snapshot.forEach(function(childSnapshot) {
+          const submission = childSnapshot.val();
+          submission.id = childSnapshot.key;
+          submissions.push(submission);
+        });
+
+        // Sort submissions: higher score first; if tied, earlier submission wins.
+        submissions.sort(function(a, b) {
+          if (b.score !== a.score) {
+            return b.score - a.score;
+          } else {
+            return a.submissionTime - b.submissionTime;
+          }
+        });
+
+        let html = '<table>';
+        html += '<tr><th>Rank</th><th>Name</th><th>Score</th></tr>';
+        submissions.forEach(function(submission, index) {
+          // Add a crown emoji for the top-ranked submission.
+          let crown = "";
+          let rowClass = "";
+          if (index === 0) {
+            crown = '<span class="crown">👑</span>';
+            rowClass = ' class="top-rank"';
+          }
+          html += '<tr' + rowClass + '>';
+          html += '<td>' + (index + 1) + (index === 0 ? crown : "") + '</td>';
+          html += '<td>' + submission.name + '</td>';
+          html += '<td>' + submission.score + '/6</td>';
+          html += '</tr>';
+        });
+        html += '</table>';
+        document.getElementById('leaderboard').innerHTML = html;
+      });
+    }
+
+    // Load the leaderboard initially and update in real time.
+    updateLeaderboard();
+    database.ref('submissions').on('value', function(snapshot) {
+      updateLeaderboard();
+    });
+  </script>
+</body>
+</html>

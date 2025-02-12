@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz Result</title>
+  <!-- Mobile-friendly meta tag -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Firebase libraries -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDMOujthKTRne8t-GxN5T8fZDYiYdvgCl8",
+    authDomain: "ear-quiz.firebaseapp.com",
+    databaseURL: "https://ear-quiz-default-rtdb.firebaseio.com",
+    projectId: "ear-quiz",
+    storageBucket: "ear-quiz.firebasestorage.app",
+    messagingSenderId: "139171233343",
+    appId: "1:139171233343:web:60db4ab5536e0ac06fc28a"
+  };
+    firebase.initializeApp(firebaseConfig);
+    var database = firebase.database();
+
+    // Utility to get query parameters
+    function getQueryParam(param) {
+      let urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+  </script>
+  <style>
+    /* Mobile-friendly styling for results */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+      padding: 10px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .result-container {
+      background-color: #f7f7f7;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    p, h3 {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Your Quiz Submission</h1>
+  <div id="result" class="result-container"></div>
+
+  <script>
+    const submissionId = getQueryParam('id');
+    if (submissionId) {
+      const submissionRef = database.ref('submissions/' + submissionId);
+      submissionRef.once('value').then(function(snapshot) {
+        const data = snapshot.val();
+        if (data) {
+          let html = '<p><strong>Name:</strong> ' + data.name + '</p>';
+          html += '<p><strong>Score:</strong> ' + data.score + ' out of 6</p>';
+          html += '<h3>Your Answers:</h3>';
+          for (let key in data.answers) {
+            html += '<p>' + key.toUpperCase() + ': ' + data.answers[key] + '</p>';
+          }
+          document.getElementById('result').innerHTML = html;
+        } else {
+          document.getElementById('result').innerHTML = '<p>No submission found.</p>';
+        }
+      });
+    } else {
+      document.getElementById('result').innerHTML = '<p>Invalid submission ID.</p>';
+    }
+  </script>
+</body>
+</html>

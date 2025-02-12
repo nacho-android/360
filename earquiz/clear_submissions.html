@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Clear Submissions</title>
+  <!-- Firebase libraries -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDMOujthKTRne8t-GxN5T8fZDYiYdvgCl8",
+    authDomain: "ear-quiz.firebaseapp.com",
+    databaseURL: "https://ear-quiz-default-rtdb.firebaseio.com",
+    projectId: "ear-quiz",
+    storageBucket: "ear-quiz.firebasestorage.app",
+    messagingSenderId: "139171233343",
+    appId: "1:139171233343:web:60db4ab5536e0ac06fc28a"
+  };
+    firebase.initializeApp(firebaseConfig);
+    var database = firebase.database();
+
+    // Remove the 'submissions' node
+    function clearSubmissions() {
+      database.ref('submissions').remove()
+      .then(() => {
+        console.log('All submissions cleared.');
+        alert('Submissions have been cleared.');
+      })
+      .catch((error) => {
+        console.error('Error clearing submissions:', error);
+        alert('Error clearing submissions. Check console for details.');
+      });
+    }
+  </script>
+</head>
+<body>
+  <h1>Clear Submissions</h1>
+  <button onclick="clearSubmissions()">Clear Submissions</button>
+</body>
+</html>
