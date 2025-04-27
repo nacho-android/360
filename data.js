@@ -839,6 +839,76 @@ var APP_DATA = {
       },
       "linkHotspots": [],
       "infoHotspots": []
+    },
+    {
+      "id": "24-AT_725_PSGFH_q95_26APR2025",
+      "name": "Hotel New Akao, Atami, Shizuoka, Japan",
+      "levels": [
+        {
+          "tileSize": 256,
+          "size": 256,
+          "fallbackOnly": true
+        },
+        {
+          "tileSize": 512,
+          "size": 512
+        },
+        {
+          "tileSize": 512,
+          "size": 1024
+        },
+        {
+          "tileSize": 512,
+          "size": 2048
+        },
+        {
+          "tileSize": 512,
+          "size": 4096
+        }
+      ],
+      "faceSize": 4096,
+      "initialViewParameters": {
+        "yaw": 0.1929093497915737,
+        "pitch": 0.08308173858253198,
+        "fov": 1.2959776848255018
+      },
+      "linkHotspots": [],
+      "infoHotspots": []
+    },
+    {
+      "id": "25-AT_740_PSGFH_q95_26APR2025",
+      "name": "Hotel New Akao, Atami, Shizuoka, Japan",
+      "levels": [
+        {
+          "tileSize": 256,
+          "size": 256,
+          "fallbackOnly": true
+        },
+        {
+          "tileSize": 512,
+          "size": 512
+        },
+        {
+          "tileSize": 512,
+          "size": 1024
+        },
+        {
+          "tileSize": 512,
+          "size": 2048
+        },
+        {
+          "tileSize": 512,
+          "size": 4096
+        }
+      ],
+      "faceSize": 4096,
+      "initialViewParameters": {
+        "yaw": 0.11576163406084916,
+        "pitch": 1.3478370067647916,
+        "fov": 1.2959776848255018
+      },
+      "linkHotspots": [],
+      "infoHotspots": []
     }
   ],
   "name": "360 Worlds",
