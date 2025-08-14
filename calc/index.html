@@ -79,8 +79,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-wrap: nowrap;     /* keep on one line */
-    width: max-content;    /* shrink to content */
+    flex-wrap: nowrap;
+    width: max-content;
   }
 
   /* Inputs / selects */
@@ -91,8 +91,9 @@
     border-radius: 10px;
     font-size: 1rem;
   }
+  #estWeightSelect{ width: auto; min-width: 8ch; }
   #actWeight{
-    width: 8ch;           /* compact numeric width */
+    width: 8ch;
     text-align: center;
     line-height: 1.2;
   }
@@ -110,9 +111,6 @@
   }
   .btn:active{ transform: translateY(1px); }
   .btn.primary{ background:#eef2ff; }
-
-  /* Estimated selector (compact) */
-  #estWeightSelect{ width: auto; min-width: 8ch; }
 
   /* Collapsible sections */
   details{
@@ -137,7 +135,7 @@
 
   /* Tables */
   .table-wrap{
-    padding: 0 0 6px;             /* no left/right padding -> no sticky gap */
+    padding: 0 0 6px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
@@ -167,10 +165,8 @@
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
-  /* center data cells, keep first col left */
   table.sop td:not(:first-child){ text-align: center; }
   table.sop th:first-child{ text-align: left; }
-  /* sticky first column */
   table.sop td:first-child,
   table.sop th:first-child{
     position: sticky;
@@ -195,14 +191,69 @@
 
   .note{ color: var(--muted); font-size: .9rem; padding: 6px 2px 0; }
 
+  /* Custom editor styling (Custom table) */
+  .custom-cell{ position: relative; }
+  .custom-editor{
+    display: grid;
+    grid-template-columns: 1fr max-content;
+    grid-template-rows: auto auto;
+    gap: 6px 10px;
+    align-items: center;
+  }
+  .custom-editor .name{
+    grid-column: 1 / 2; grid-row: 1;
+    width: 18ch;
+  }
+  .custom-editor .field{
+    grid-column: 2 / 3;
+    display: flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+  }
+  .custom-editor .field input{
+    width: 9ch;
+    text-align: right;
+  }
+  .custom-editor .below{
+    grid-column: 2 / 3; grid-row: 2;
+  }
+  .custom-editor input{
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: .95rem;
+  }
+  .custom-editor label{
+    color: var(--muted);
+    font-size: .9rem;
+    font-weight: 600;
+  }
+
+  /* Delete button (lower-left of first column) */
+  .custom-del{
+    position: absolute;
+    left: 6px; bottom: 6px;
+    width: 22px; height: 22px;
+    line-height: 20px;
+    text-align: center;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: #fff;
+    cursor: pointer;
+    font-weight: 700;
+    color: #6b7280;
+    padding: 0;
+  }
+  .custom-del:active{ transform: translateY(1px); }
+
   /* Responsive tweaks */
   @media (max-width: 640px){
-    .wrap{ padding: 8px 8px 8px; }
+    .wrap{ padding: 8px 8px; }
     h1{ font-size: 1.3rem; }
     .controls{ gap: 8px; padding: 8px; border-radius: 10px; }
     details{ margin: 10px 0; border-radius: 10px; }
     table.sop th, table.sop td{ padding: 2px 2px; font-size: .95rem; }
     table.sop td:first-child, table.sop th:first-child{ width: 150px; min-width: 150px; }
+    .custom-editor .name{ width: 14ch; }
   }
 </style>
 
@@ -235,16 +286,56 @@
 
 <script>
 (function(){
-  /******************** Data ********************/
+  /******************** Data & storage ********************/
   const weights = Array.from({length: ((100-20)/5)+1}, (_,i)=>20 + i*5);
 
-  // Helpers to define rows
+  // Safe storage wrapper (localStorage)
+  const storage = {
+    get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+    set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} },
+    remove(k){ try{ localStorage.removeItem(k); }catch(e){} }
+  };
+
+  /******************** Helpers ********************/
   const mgkg = (mgPerKg, mgPerMl) => ({ amt: mgPerKg, unit: 'mg_per_kg', conc: mgPerMl, concUnit: 'mg_per_ml' });
   const ugkg = (ugPerKg, ugPerMl) => ({ amt: ugPerKg, unit: 'ug_per_kg', conc: ugPerMl, concUnit: 'ug_per_ml' });
   const mgkgPerHour = (mgPerKgPerH, mgPerMl) => ({ amt: mgPerKgPerH, unit: 'mg_per_kg_per_h', conc: mgPerMl, concUnit: 'mg_per_ml' });
   const ugkgPerHour = (ugPerKgPerH, ugPerMl) => ({ amt: ugPerKgPerH, unit: 'ug_per_kg_per_h', conc: ugPerMl, concUnit: 'ug_per_ml' });
+  const mlkg = (mlPerKg) => ({ amt: mlPerKg, unit: 'ml_per_kg' });
 
-  // Page 5 — IM sedation (minor) & reversal; Premed (longer procedures)
+  // Decimal places per drug (overrides)
+  const DRUG_DP = { propofol:0, ketamine:1, midazolam:1, fentanyl:1, buprenorphine:2, saline:0 };
+  function dpFor(drugLabel, override){
+    if(override !== undefined && override !== null && override !== '') return Number(override);
+    const lbl = String(drugLabel||'').toLowerCase();
+    for(const key in DRUG_DP){ if(lbl.includes(key)) return DRUG_DP[key]; }
+    return 2;
+  }
+  function fmtByDrug(drugLabel, n, override){
+    const dp = dpFor(drugLabel, override);
+    return isFinite(n) ? n.toFixed(dp) : '—';
+  }
+
+  function volFor(weightKg, rule){
+    const {amt, unit, conc, concUnit} = rule;
+    if(unit === 'ml_per_kg'){ return amt * weightKg; }
+    let dosePerKg_mg = 0;
+    if(unit === 'mg_per_kg' || unit === 'mg_per_kg_per_h') dosePerKg_mg = amt;
+    if(unit === 'ug_per_kg' || unit === 'ug_per_kg_per_h') dosePerKg_mg = amt/1000;
+    const dose_mg = dosePerKg_mg * weightKg;
+    const conc_mg_per_ml = (concUnit === 'mg_per_ml') ? conc : (conc/1000);
+    return dose_mg / conc_mg_per_ml;
+  }
+
+  function ruleFromRow(tr){
+    const amt = parseFloat(tr.dataset.amt);
+    const unit = tr.dataset.unit;
+    const conc = (tr.dataset.conc !== undefined) ? parseFloat(tr.dataset.conc) : undefined;
+    const concUnit = tr.dataset.concu;
+    return { amt, unit, conc, concUnit };
+  }
+
+  /******************** Data sets ********************/
   const imSedationMinor = [
     { drug: 'Midazolam', spec: '0.4 mg/kg (5 mg/mL)', kind: 'bolus', rule: mgkg(0.4, 5) },
     { drug: 'Butorphanol', spec: '0.1 mg/kg (10 mg/mL)', kind: 'bolus', rule: mgkg(0.1, 10) },
@@ -260,20 +351,20 @@
     { drug: 'Ketamine', spec: '8 mg/kg (100 mg/mL)', kind: 'bolus', rule: mgkg(8, 100) },
     { drug: 'Medetomidine', spec: '0.01 mg/kg (1 mg/mL)', kind: 'bolus', rule: mgkg(0.01, 1) },
   ];
-
-  // Page 6 — Induction & boluses
   const ivBoluses = [
     { drug: 'Methadone', spec: '0.3 mg/kg (10 mg/mL)', kind: 'bolus', rule: mgkg(0.3, 10) },
     { drug: 'Fentanyl', spec: '5 µg/kg (50 µg/mL)', kind: 'bolus', rule: ugkg(5, 50) },
     { drug: 'Propofol', spec: '1 mg/kg (10 mg/mL)', kind: 'bolus', rule: mgkg(1, 10) },
   ];
-
-  // Page 8 — TIVA rates (mL/h)
-  const tivaPropofol = [2,4,6,8,10,12].map(r => ({ drug: `${r} mg/kg/h`, spec: '', kind: 'infusion', rule: mgkgPerHour(r, 10) }));
-  const tivaMidazolam = [0.1,0.2,0.3,0.4].map(r => ({ drug: `${r} mg/kg/h`, spec: '', kind: 'infusion', rule: mgkgPerHour(r, 1) }));
-  const tivaFentanyl  = [1,2,5,10,15].map(r => ({ drug: `${r} µg/kg/h`, spec: '', kind: 'infusion', rule: ugkgPerHour(r, 50) }));
-
-  // Page 11 — Miscellaneous IV drug doses (text only per SOP; no calc column)
+  const tivaPropofol = [2,4,6,8,10,12].map(r => ({ drug: `${r} mg/kg/h`, spec: '', kind: 'infusion', rule: mgkgPerHour(r, 10), dp: 0 }));
+  const tivaMidazolam = [0.1,0.2,0.3,0.4].map(r => ({ drug: `${r} mg/kg/h`, spec: '', kind: 'infusion', rule: mgkgPerHour(r, 1), dp: 1 }));
+  const tivaFentanyl  = [1,2,5,10,15].map(r => ({ drug: `${r} µg/kg/h`, spec: '', kind: 'infusion', rule: ugkgPerHour(r, 50), dp: 1 }));
+  const other = [
+    { drug: 'Buprenorphine', spec: '0.02 mg/kg<br>(0.3 mg/mL)', kind: 'bolus', rule: mgkg(0.02, 0.3), dp: 2 },
+    { drug: 'Saline', spec: '4 mL/kg/h', kind: 'bolus', rule: mlkg(4), dp: 0 },
+    { drug: 'Saline', spec: '5 mL/kg/h', kind: 'bolus', rule: mlkg(5), dp: 0 },
+    { drug: 'Saline', spec: '6 mL/kg/h', kind: 'bolus', rule: mlkg(6), dp: 0 },
+  ];
   const misc = [
     { drug: 'Heparin', initial: '5,000 IU bolus', maint: 'Repeat 2,000 IU after 1 h, then 1,000 IU hourly (Target ACT 250–300 s)' },
     { drug: 'Metaraminol<br>(0.5 mg/mL)', initial: '0.5–1 mL bolus', maint: 'Repeat as required; wait 1–2 min between boluses' },
@@ -281,35 +372,17 @@
     { drug: 'Atropine', initial: '600 µg bolus', maint: 'As required' },
     { drug: 'Amiodarone<br>(3 mg/mL in 5% glucose)', initial: '150 mg (or 5 mg/kg) over 30 min', maint: 'As required' },
     { drug: 'Lignocaine', initial: '100 mg (or 3 mg/kg) slowly', maint: '30–60 mg/h (or 1–2 mg/kg/h)' },
+    { drug: 'Metoprolol', initial: '1 mg slowly', maint: 'As required' },
   ];
 
-  /******************** Maths ********************/
-  function volFor(weightKg, rule){
-    const {amt, unit, conc, concUnit} = rule;
-    let dosePerKg_mg = 0;
-    if(unit === 'mg_per_kg' || unit === 'mg_per_kg_per_h') dosePerKg_mg = amt;
-    if(unit === 'ug_per_kg' || unit === 'ug_per_kg_per_h') dosePerKg_mg = amt/1000; // µg -> mg
-    const dose_mg = dosePerKg_mg * weightKg; // (or per hour if *_per_h)
-    const conc_mg_per_ml = (concUnit === 'mg_per_ml') ? conc : (conc/1000); // if µg/mL -> mg/mL
-    const mL = dose_mg / conc_mg_per_ml; // mL or mL/h depending on rule
-    return mL;
-  }
-
- // 1 dp for propofol/fentanyl/midazolam, 2 dp for everything else
- const ONE_DP_RX = /propofol|fentanyl|midazolam/i;
- function fmtByDrug(drugLabel, n){
-   const dp = ONE_DP_RX.test(drugLabel) ? 1 : 2;
-   return isFinite(n) ? n.toFixed(dp) : '—';
- }
-
-  /******************** Rendering ********************/
-  const app = document.getElementById('app');
-
+  /******************** Build table utilities ********************/
   function buildDoseTable(sectionId, title, note, rows){
     const tblId = `tbl-${sectionId}`;
     const details = document.createElement('details');
-    details.open = true;
+    details.open = (storage.get('open:'+sectionId) ?? '1') === '1';
     details.id = sectionId;
+    details.addEventListener('toggle', ()=> storage.set('open:'+sectionId, details.open ? '1' : '0'));
+
     const summary = document.createElement('summary');
     summary.innerHTML = `<span>${title}</span><span class="meta">Units: mL${title.includes('TIVA') ? '/h' : ''}</span>`;
     details.appendChild(summary);
@@ -321,7 +394,6 @@
     table.className = 'sop';
     table.id = tblId;
 
-    // Thead
     const thead = document.createElement('thead');
     const htr = document.createElement('tr');
     const thDrug = document.createElement('th'); thDrug.textContent = 'Drug'; htr.appendChild(thDrug);
@@ -334,16 +406,15 @@
     thead.appendChild(htr);
     table.appendChild(thead);
 
-    // Tbody
     const tbody = document.createElement('tbody');
     rows.forEach(r=>{
       const tr = document.createElement('tr');
-      // Store rule on the row for accurate Actual calculations (incl. TIVA)
       tr.dataset.amt = String(r.rule.amt);
       tr.dataset.unit = r.rule.unit;
-      tr.dataset.conc = String(r.rule.conc);
-      tr.dataset.concu = r.rule.concUnit;
-      tr.dataset.drugLabel = ONE_DP_RX.test(title) ? title : r.drug;
+      if(r.rule.conc !== undefined){ tr.dataset.conc = String(r.rule.conc); }
+      if(r.rule.concUnit){ tr.dataset.concu = r.rule.concUnit; }
+      tr.dataset.drugLabel = r.drug;
+      tr.dataset.dp = r.dp !== undefined ? String(r.dp) : '';
 
       const tdName = document.createElement('td');
       tdName.style.textAlign = 'left';
@@ -352,8 +423,9 @@
 
       weights.forEach(w=>{
         const td = document.createElement('td');
-        const mL = volFor(w, r.rule);
-        td.textContent = fmtByDrug(tr.dataset.drugLabel, mL);
+        const mL = volFor(w, ruleFromRow(tr));
+        const dpOverride = tr.dataset.dp === '' ? undefined : Number(tr.dataset.dp);
+        td.textContent = fmtByDrug(tr.dataset.drugLabel, mL, dpOverride);
         td.dataset.w = String(w);
         tr.appendChild(td);
       });
@@ -372,12 +444,15 @@
 
     details.appendChild(wrap);
     app.appendChild(details);
-    return table; // return for updates
+    return table;
   }
 
   function buildMiscTable(){
     const details = document.createElement('details');
-    details.open = true;
+    details.id = 'p11-misc';
+    details.open = (storage.get('open:'+details.id) ?? '1') === '1';
+    details.addEventListener('toggle', ()=> storage.set('open:'+details.id, details.open ? '1' : '0'));
+
     const summary = document.createElement('summary');
     summary.innerHTML = `<span>Miscellaneous Intravenous Drug Doses</span><span class="meta"></span>`;
     details.appendChild(summary);
@@ -404,7 +479,6 @@
 
     table.appendChild(tbody);
     wrap.appendChild(table);
-
     const foot = document.createElement('div'); foot.className='note'; foot.textContent = ''; wrap.appendChild(foot);
 
     details.appendChild(wrap);
@@ -412,54 +486,280 @@
     return table;
   }
 
-  // Build all sections (order matches requested pages)
-  const tbl1 = buildDoseTable('p5-im-minor', 'IM Sedation for Minor Procedures', '', imSedationMinor);
-  const tbl1b = buildDoseTable('p5-im-reversal', 'IM Reversal<br>(2–4× the medetomidine dose)', '', imReversal);
+  /******************** Custom table (persist + delete) ********************/
+  const CUSTOM_KEY = 'customRowsV1';
+  function loadCustomRows(){
+    try{
+      const raw = storage.get(CUSTOM_KEY);
+      const rows = raw ? JSON.parse(raw) : [];
+      return Array.isArray(rows) ? rows : [];
+    }catch(e){ return []; }
+  }
+  function saveCustomRows(rows){ storage.set(CUSTOM_KEY, JSON.stringify(rows)); }
+  function genId(){ return 'r' + Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+  let customRows = [];   // in-memory mirror
+  let tablesReady = false; // <— prevents early recalcs before setup finishes
+
+  function buildCustomTable(){
+    const sectionId = 'p12-custom';
+    const details = document.createElement('details');
+    details.id = sectionId;
+    details.open = (storage.get('open:'+details.id) ?? '1') === '1';
+    details.addEventListener('toggle', ()=> storage.set('open:'+details.id, details.open ? '1' : '0'));
+
+    const summary = document.createElement('summary');
+    summary.innerHTML = `<span>Custom</span><span class="meta">Units: mL</span>`;
+    details.appendChild(summary);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'table-wrap sync-scroll';
+
+    const table = document.createElement('table');
+    table.className = 'sop';
+    table.id = 'tbl-custom';
+
+    const thead = document.createElement('thead');
+    const htr = document.createElement('tr');
+    const thDrug = document.createElement('th'); thDrug.textContent = 'Drug'; htr.appendChild(thDrug);
+    weights.forEach(w=>{
+      const th = document.createElement('th');
+      th.textContent = `${w} kg`;
+      th.dataset.w = String(w);
+      htr.appendChild(th);
+    });
+    thead.appendChild(htr);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    table.appendChild(tbody);
+
+    wrap.appendChild(table);
+
+    const foot = document.createElement('div');
+    foot.className = 'note';
+    const addBtn = document.createElement('button');
+    addBtn.className = 'btn';
+    addBtn.textContent = 'Add row';
+    addBtn.addEventListener('click', ()=>{
+      const rowObj = { id: genId(), name: '', mgkg: '', mgml: '' };
+      customRows.push(rowObj);
+      saveCustomRows(customRows);
+      addCustomRow(tbody, rowObj);
+      if(tablesReady){
+        updateHighlights(currentEstimated());
+        repositionActualAcrossTables(currentActual());
+      }
+    });
+    foot.appendChild(addBtn);
+    wrap.appendChild(foot);
+
+    details.appendChild(wrap);
+    app.appendChild(details);
+
+    // Populate from storage (or one blank row)
+    const stored = loadCustomRows();
+    if(stored.length === 0){
+      const rowObj = { id: genId(), name: '', mgkg: '', mgml: '' };
+      customRows = [rowObj];
+      saveCustomRows(customRows);
+      addCustomRow(tbody, rowObj);
+    }else{
+      customRows = stored;
+      customRows.forEach(r => addCustomRow(tbody, r));
+    }
+
+  const initW = Number(storage.get('estWeight'));
+  const initA = Number(storage.get('actWeight'));
+  requestAnimationFrame(() => {
+    updateHighlights(Number.isFinite(initW) && initW > 0 ? initW : 20);
+    repositionActualAcrossTables(Number.isFinite(initA) && initA > 0 ? initA : 20);
+  });
+
+    return table;
+  }
+
+  function addCustomRow(tbody, rowObj){
+    const tr = document.createElement('tr');
+    tr.dataset.id = rowObj.id;
+    tr.dataset.unit = 'mg_per_kg';
+    tr.dataset.concu = 'mg_per_ml';
+    tr.dataset.amt = rowObj.mgkg ?? '';
+    tr.dataset.conc = rowObj.mgml ?? '';
+    tr.dataset.drugLabel = rowObj.name ?? '';
+    tr.dataset.dp = '2'; // force 2 dp (incl. actual column)
+
+    // First cell: editor + delete button
+    const tdName = document.createElement('td');
+    tdName.className = 'custom-cell';
+    tdName.style.textAlign = 'left';
+
+    const editor = document.createElement('div');
+    editor.className = 'custom-editor';
+
+    const nameInput = document.createElement('input');
+    nameInput.className = 'name';
+    nameInput.placeholder = 'Drug name';
+    nameInput.setAttribute('aria-label', 'Custom drug name');
+    nameInput.value = rowObj.name ?? '';
+
+    const mgkgWrap = document.createElement('div');
+    mgkgWrap.className = 'field';
+    const mgkgLabel = document.createElement('label'); mgkgLabel.textContent = 'mg/kg';
+    const mgkgInput = document.createElement('input');
+    mgkgInput.type = 'number'; mgkgInput.step = '0.01'; mgkgInput.min = '0';
+    mgkgInput.inputMode = 'decimal'; mgkgInput.placeholder = '0.00';
+    mgkgInput.setAttribute('aria-label', 'Dose mg per kg');
+    mgkgInput.value = rowObj.mgkg ?? '';
+
+    mgkgWrap.appendChild(mgkgLabel); mgkgWrap.appendChild(mgkgInput);
+
+    const mgmlWrap = document.createElement('div');
+    mgmlWrap.className = 'field below';
+    const mgmlLabel = document.createElement('label'); mgmlLabel.textContent = 'mg/mL';
+    const mgmlInput = document.createElement('input');
+    mgmlInput.type = 'number'; mgmlInput.step = '0.01'; mgmlInput.min = '0';
+    mgmlInput.inputMode = 'decimal'; mgmlInput.placeholder = '0.00';
+    mgmlInput.setAttribute('aria-label', 'Concentration mg per mL');
+    mgmlInput.value = rowObj.mgml ?? '';
+
+    mgmlWrap.appendChild(mgmlLabel); mgmlWrap.appendChild(mgmlInput);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'custom-del'; delBtn.type = 'button';
+    delBtn.title = 'Delete row'; delBtn.setAttribute('aria-label','Delete custom row');
+    delBtn.textContent = '×';
+    delBtn.addEventListener('click', ()=>{
+      if(confirm('Delete this custom row?')){
+        tr.remove();
+        customRows = customRows.filter(r => r.id !== rowObj.id);
+        if(customRows.length === 0){
+          const newRow = { id: genId(), name: '', mgkg: '', mgml: '' };
+          customRows.push(newRow);
+          addCustomRow(tbody, newRow);
+        }
+        saveCustomRows(customRows);
+        if(tablesReady){ repositionActualAcrossTables(currentActual()); }
+      }
+    });
+
+    editor.appendChild(nameInput);
+    editor.appendChild(mgkgWrap);
+    editor.appendChild(mgmlWrap);
+
+    tdName.appendChild(editor);
+    tdName.appendChild(delBtn);
+    tr.appendChild(tdName);
+
+    // Data cells (— initially)
+    weights.forEach(w=>{
+      const td = document.createElement('td');
+      td.dataset.w = String(w);
+      td.textContent = '—';
+      tr.appendChild(td);
+    });
+
+    // Render helper for this row
+    function renderRow(){
+      tr.dataset.drugLabel = nameInput.value || '';
+      tr.dataset.amt = mgkgInput.value || '';
+      tr.dataset.conc = mgmlInput.value || '';
+
+      // Update persisted model
+      const idx = customRows.findIndex(r => r.id === rowObj.id);
+      if(idx !== -1){
+        customRows[idx] = {
+          id: rowObj.id,
+          name: tr.dataset.drugLabel,
+          mgkg: tr.dataset.amt,
+          mgml: tr.dataset.conc
+        };
+        saveCustomRows(customRows);
+      }
+
+      // Update each weight column
+      weights.forEach(w=>{
+        const td = tr.querySelector(`td[data-w="${w}"]`);
+        const rule = ruleFromRow(tr);
+        const mL = volFor(w, rule);
+        td.textContent = fmtByDrug(tr.dataset.drugLabel, mL, 2); // force 2 dp
+      });
+
+      // Only try to reposition after setup is complete
+      if(tablesReady){ repositionActualAcrossTables(currentActual()); }
+    }
+
+    nameInput.addEventListener('input', renderRow);
+    mgkgInput.addEventListener('input', renderRow);
+    mgmlInput.addEventListener('input', renderRow);
+
+    tbody.appendChild(tr);
+    renderRow(); // safe: guarded by tablesReady
+  }
+
+  /******************** App root ********************/
+  const app = document.getElementById('app');
+
+  // Build all sections
+  const tbl1  = buildDoseTable('p5-im-minor', 'IM Sedation for Minor Procedures', '', imSedationMinor);
+  const tbl1b = buildDoseTable('p5-im-reversal', 'IM Reversal', 'Use 2–4× the medetomidine dose', imReversal);
   const tbl1c = buildDoseTable('p5-im-premed', 'IM Premedication for Longer Procedures', '', imPremedLonger);
 
-  const tbl2 = buildDoseTable('p6-iv-bolus', 'IV Boluses / Induction', '', ivBoluses);
+  const tbl2  = buildDoseTable('p6-iv-bolus', 'IV Boluses / Induction', '', ivBoluses);
 
   const tbl3a = buildDoseTable('p8-tiva-prop', 'TIVA — Propofol (10 mg/mL)', '', tivaPropofol);
   const tbl3b = buildDoseTable('p8-tiva-mid', 'TIVA — Midazolam (1 mg/mL)', '', tivaMidazolam);
   const tbl3c = buildDoseTable('p8-tiva-fent', 'TIVA — Fentanyl (50 µg/mL)', '', tivaFentanyl);
 
-  const tbl4 = buildMiscTable();
+  const tblOther = buildDoseTable('p9-other', 'Other', '', [
+    ...other
+  ]);
 
-  const allTables = [tbl1, tbl1b, tbl1c, tbl2, tbl3a, tbl3b, tbl3c];
+  const tbl4  = buildMiscTable();
 
-/******************** Estimated Weight (select) ********************/
-const estSelect = document.getElementById('estWeightSelect');
-let estVal = 20; // default
+  const tblCustom = buildCustomTable();
 
-// Populate options 20..100 step 5
-weights.forEach(w => {
-  const opt = document.createElement('option');
-  opt.value = String(w);
-  opt.textContent = `${w} kg`;
-  estSelect.appendChild(opt);
-});
-estSelect.value = String(estVal);
+  // Tables used for highlights & actual column placement
+  const allTables = [tbl1, tbl1b, tbl1c, tbl2, tbl3a, tbl3b, tbl3c, tblOther, tblCustom];
 
-// Keep everything in sync
-estSelect.addEventListener('change', (e) => setEstimated(Number(e.target.value)));
-estSelect.addEventListener('input',  (e) => setEstimated(Number(e.target.value))); // some UAs fire 'input'
-
-// Update helpers
-function setEstimated(v){
-  estVal = clampToStep(v, 20, 100, 5);
-  if(estSelect && estSelect.value !== String(estVal)) estSelect.value = String(estVal);
-  updateHighlights(estVal);
-  repositionActualAcrossTables(Number(actInput.value || 0));
-}
-
-
-  /******************** Interaction & Updates ********************/
+  /******************** Estimated & actual controls ********************/
+  const estSelect = document.getElementById('estWeightSelect');
   const actInput = document.getElementById('actWeight');
   const applyBtn = document.getElementById('applyActual');
 
-  // Select-all when the actual weight field gets focus
+  let estVal = 20; // default
+
+  // Populate options 20..100 step 5
+  weights.forEach(w => {
+    const opt = document.createElement('option');
+    opt.value = String(w);
+    opt.textContent = `${w} kg`;
+    estSelect.appendChild(opt);
+  });
+  estSelect.value = String(estVal);
+
+  estSelect.addEventListener('change', (e) => setEstimated(Number(e.target.value)));
+  estSelect.addEventListener('input',  (e) => setEstimated(Number(e.target.value)));
+
+  function clampToStep(num, min, max, step){
+    const n = Math.round((Number(num)-min)/step)*step + min; return Math.max(min, Math.min(max, n));
+  }
+  function currentActual(){
+    const el = document.getElementById('actWeight');
+    return Number((el && el.value) ? el.value : 0);
+  }
+  function currentEstimated(){ return estVal; }
+
+  function setEstimated(v){
+    estVal = clampToStep(v, 20, 100, 5);
+    if(estSelect && estSelect.value !== String(estVal)) estSelect.value = String(estVal);
+    updateHighlights(estVal);
+    repositionActualAcrossTables(currentActual());
+    storage.set('estWeight', String(estVal));
+  }
+
+  // Select-all behaviour
   actInput.addEventListener('focus', () => {requestAnimationFrame(() => actInput.select());});
-  // Prevent the click/tap from clearing the selection
   actInput.addEventListener('mouseup', (e) => e.preventDefault());
   actInput.addEventListener('pointerup', (e) => e.preventDefault());
 
@@ -467,12 +767,13 @@ function setEstimated(v){
     const v = Math.max(1, Math.min(300, Number(val)));
     actInput.value = String(v.toFixed(1));
     repositionActualAcrossTables(v);
-  }
-  function clampToStep(num, min, max, step){
-    const n = Math.round((Number(num)-min)/step)*step + min; return Math.max(min, Math.min(max, n));
+    storage.set('actWeight', String(v.toFixed(1)));
   }
 
-  // Highlight estimated-weight column in every table
+  applyBtn.addEventListener('click', ()=> syncActual(Number(actInput.value)) );
+  actInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); syncActual(Number(actInput.value)); }});
+
+  /******************** Column highlights & actual column ********************/
   function updateHighlights(w){
     document.querySelectorAll('table.sop').forEach(tbl=>{
       tbl.querySelectorAll('th,td').forEach(cell=>cell.classList.remove('col-highlight'));
@@ -482,24 +783,14 @@ function setEstimated(v){
     });
   }
 
-  function ruleFromRow(tr){
-    const amt = parseFloat(tr.dataset.amt);
-    const unit = tr.dataset.unit;
-    const conc = parseFloat(tr.dataset.conc);
-    const concUnit = tr.dataset.concu;
-    return { amt, unit, conc, concUnit };
+  function insertionIndexForWeight(tbl, weight){
+    let countLE = 0;
+    for(const w of weights){ if(weight >= w) countLE++; }
+    return 1 + countLE;
   }
 
   function repositionActualAcrossTables(weight){
     allTables.forEach(tbl=> repositionActualForTable(tbl, weight));
-  }
-
-  function insertionIndexForWeight(tbl, weight){
-    // After the Drug column, there are weight columns in ascending order.
-    // Insert AFTER the last weight <= actual.
-    let countLE = 0;
-    for(const w of weights){ if(weight >= w) countLE++; }
-    return 1 + countLE; // between the correct two weight columns
   }
 
   function repositionActualForTable(tbl, weight){
@@ -513,19 +804,20 @@ function setEstimated(v){
     // Compute insertion index
     const insertIdx = insertionIndexForWeight(tbl, weight);
 
-    // Create header cell
+    // Header cell
     const thAct = document.createElement('th');
     thAct.className = 'actual-col';
     thAct.textContent = `[${weight.toFixed(1)} kg]`;
     theadRow.insertBefore(thAct, theadRow.children[insertIdx] || null);
 
-    // Create body cells
+    // Body cells
     Array.from(tbody.rows).forEach(tr=>{
       const td = document.createElement('td');
       td.className = 'actual-col';
       const rule = ruleFromRow(tr);
       const drugLabel = tr.dataset.drugLabel || '';
-      td.textContent = fmtByDrug(drugLabel, volFor(weight, rule));
+      const dpOverride = (tbl.id === 'tbl-custom') ? 2 : (tr.dataset.dp === '' ? undefined : Number(tr.dataset.dp));
+      td.textContent = fmtByDrug(drugLabel, volFor(weight, rule), dpOverride);
       tr.insertBefore(td, tr.children[insertIdx] || null);
     });
   }
@@ -538,19 +830,18 @@ function setEstimated(v){
       if(syncing) return; syncing = true;
       const x = el.scrollLeft;
       scrollers.forEach(other=>{ if(other!==el) other.scrollLeft = x; });
-      // Allow next frame
       requestAnimationFrame(()=>{ syncing = false; });
     }, {passive:true});
   });
 
-  /******************** Apply handlers ********************/
-  applyBtn.addEventListener('click', ()=> syncActual(Number(actInput.value)) );
-  actInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); syncActual(Number(actInput.value)); }});
-  // Do not update on every keypress: we removed the 'input' listener by design
+  /******************** Initial render ********************/
+  // mark tables as ready BEFORE we do first highlight/reposition so Custom's early renders are safe to trigger later
+  tablesReady = true;
 
-  // Initial render state
-  setEstimated(20);
-  syncActual(20.0);
+  const savedEst = Number(storage.get('estWeight'));
+  const savedAct = Number(storage.get('actWeight'));
+  setEstimated(isFinite(savedEst) && savedEst > 0 ? savedEst : 20);
+  syncActual(isFinite(savedAct) && savedAct > 0 ? savedAct : 20.0);
 })();
 </script>
 </body>
