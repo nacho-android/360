@@ -17,10 +17,10 @@
       --gold:#f59e0b;
     }
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+    html,body{height:auto;min-height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
     a{color:var(--accent)}
     .container{
-      display:flex;flex-direction:column;min-height:100%;
+      display:flex;flex-direction:column;min-height:100svh;min-height:100vh;
     }
     header{
       display:flex;align-items:center;justify-content:space-between;
@@ -137,9 +137,35 @@
 
     /* Mobile friendly */
     @media (max-width: 900px){
-      .tools{width:100%}
+      .tools{display:none}
+      .mobile-tray{display:flex}
+      main{padding-bottom:110px}
       .board{min-height:480px}
     }
+
+    /* Mobile bottom tool tray */
+    .mobile-tray{
+      position:fixed;left:50%;transform:translateX(-50%);
+      bottom:calc(10px + env(safe-area-inset-bottom));z-index:10001;
+      display:flex;gap:10px;padding:8px;
+      background:rgba(17,24,39,0.9);backdrop-filter:blur(8px);
+      border:1px solid rgba(255,255,255,0.12);border-radius:14px;
+      box-shadow:0 12px 30px rgba(0,0,0,0.5);
+    }
+    .tray-btn{
+      display:flex;flex-direction:column;align-items:center;gap:4px;
+      background:#0f1730;border:1px solid rgba(255,255,255,0.12);
+      border-radius:12px;padding:8px 10px;min-width:64px;user-select:none
+    }
+    .tray-btn .icon{font-size:22px;line-height:1}
+    .tray-btn .label{font-size:11px;color:#cbd5e1}
+    .tray-btn .count{font-size:11px;color:#93c5fd}
+    .tray-btn.active{outline:2px solid var(--accent)}
+  
+    @media (min-width: 1200px){
+      .mobile-tray{display:none}
+    }
+
   </style>
 </head>
 <body>
@@ -186,7 +212,7 @@
           <div class="legend">
             <div class="key"><div class="box safe"></div> Safe (inject)</div>
             <div class="key"><div class="box danger"></div> Dangerous (rupture)</div>
-            <div class="key">Drag a tool and release over a spot.</div>
+            <div class="key">Drag a tool and release over a spot. On mobile, you can also tap a tool, then tap a spot.</div>
           </div>
         </div>
       </section>
@@ -252,6 +278,25 @@
     </div>
   </div>
 
+  <!-- Mobile tool tray for small screens -->
+  <div class="mobile-tray" id="mobileTray" role="toolbar" aria-label="Tools">
+    <button class="tray-btn" id="tray-syringe" type="button">
+      <div class="icon">💉</div>
+      <div class="label">Syringe</div>
+      <div class="count" id="traySyr">∞</div>
+    </button>
+    <button class="tray-btn" id="tray-wand" type="button">
+      <div class="icon">🪄</div>
+      <div class="label">Wand</div>
+      <div class="count" id="trayWand">3</div>
+    </button>
+    <button class="tray-btn" id="tray-bandage" type="button">
+      <div class="icon">🩹</div>
+      <div class="label">Bandage</div>
+      <div class="count" id="trayBand">3</div>
+    </button>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
     import { getDatabase, ref, push, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
@@ -273,6 +318,7 @@
       wandsLeft: 3,
       currentTool: null, // 'syringe' | 'wand' | 'bandage'
       dragging: false,
+      pendingDrag: null,
       dragEl: null,
       spots: [], // {id,xPerc,yPerc,type:'safe'|'danger',revealed:false, injected:false, sealed:false}
       leak: null, // {spotId, x, y, deadline, timerEl, bloodEl, holdStart:null}
@@ -287,7 +333,10 @@
     const toolEls = {
       syringe: document.getElementById('tool-syringe'),
       wand: document.getElementById('tool-wand'),
-      bandage: document.getElementById('tool-bandage')
+      bandage: document.getElementById('tool-bandage'),
+      traySyringe: document.getElementById('tray-syringe'),
+      trayWand: document.getElementById('tray-wand'),
+      trayBandage: document.getElementById('tray-bandage')
     };
     const counters = {
       success: document.getElementById('successCount'),
@@ -296,7 +345,10 @@
       timer: document.getElementById('timer'),
       playerNameHUD: document.getElementById('playerNameHUD'),
       wandCount: document.getElementById('wandCount'),
-      bandageCount: document.getElementById('bandageCount')
+      bandageCount: document.getElementById('bandageCount'),
+      traySyr: document.getElementById('traySyr'),
+      trayWand: document.getElementById('trayWand'),
+      trayBand: document.getElementById('trayBand')
     };
     const resetBtn = document.getElementById('resetBtn');
     const startOverlay = document.getElementById('startOverlay');
@@ -374,7 +426,7 @@
       localStorage.setItem(key, String(prev + 1));
     };
 
-    const escapeHtml = (str)=> str.replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&#92;","'":"&#39;","\"":"&#92;","\"":"&#92;"}[m] || m));
+    const escapeHtml = (str)=> String(str).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\\\\":"&#92;","'":"&#39;"}[m] || m));
 
     // ---------- Setup Spots ----------
     const generateSpots = () => {
@@ -437,6 +489,8 @@
       counters.wandsLeft.textContent = state.wandsLeft;
       counters.wandCount.textContent = state.wandsLeft;
       counters.bandageCount.textContent = state.bandagesLeft;
+      if (counters.trayWand) counters.trayWand.textContent = state.wandsLeft;
+      if (counters.trayBand) counters.trayBand.textContent = state.bandagesLeft;
       counters.playerNameHUD.textContent = state.playerName || '—';
     };
 
@@ -450,7 +504,6 @@
     };
 
     const resetGame = ()=>{
-      // Clear leak visuals
       if (state.leak?.bloodEl) state.leak.bloodEl.remove();
       state.leak = null;
 
@@ -461,6 +514,7 @@
       state.wandsLeft = 3;
       state.currentTool = null;
       state.dragging = false;
+      state.pendingDrag = null;
       if (state.dragEl) { state.dragEl.remove(); state.dragEl = null; }
       state.bandagesUsed = 0;
       state.wandsUsed = 0;
@@ -475,10 +529,14 @@
 
     const setActiveTool = (tool)=>{
       state.currentTool = tool;
-      for(const t of Object.values(toolEls)){
-        t.classList.remove('active');
-      }
+      // Clear active classes from side tools
+      ['syringe','wand','bandage'].forEach(k=>{ if (toolEls[k]) toolEls[k].classList.remove('active'); });
       if (tool && toolEls[tool]) toolEls[tool].classList.add('active');
+      // Sync tray
+      ['traySyringe','trayWand','trayBandage'].forEach(k=>{ if (toolEls[k]) toolEls[k].classList.remove('active'); });
+      if (tool==='syringe' && toolEls.traySyringe) toolEls.traySyringe.classList.add('active');
+      if (tool==='wand' && toolEls.trayWand) toolEls.trayWand.classList.add('active');
+      if (tool==='bandage' && toolEls.trayBandage) toolEls.trayBandage.classList.add('active');
     };
 
     const makeGhost = (tool)=>{
@@ -502,16 +560,23 @@
       if (state.ended) return;
       if (tool==='wand' && state.wandsLeft<=0) return;
       if (tool==='bandage' && state.bandagesLeft<=0) return;
-      state.dragging = true;
       setActiveTool(tool);
-      makeGhost(tool);
-      updateGhostPos(ev.clientX || (ev.touches?.[0]?.clientX) || 0, ev.clientY || (ev.touches?.[0]?.clientY) || 0);
+      state.pendingDrag = { tool, sx: (ev.clientX || (ev.touches?.[0]?.clientX) || 0), sy: (ev.clientY || (ev.touches?.[0]?.clientY) || 0) };
     };
 
     const pointerMove = (ev)=>{
-      if (!state.dragging) return;
       const cx = ev.clientX ?? (ev.touches?.[0]?.clientX) ?? 0;
       const cy = ev.clientY ?? (ev.touches?.[0]?.clientY) ?? 0;
+
+      // If user moved enough after pressing a tool, start actual drag
+      if (state.pendingDrag && !state.dragging) {
+        const dx = cx - state.pendingDrag.sx; const dy = cy - state.pendingDrag.sy;
+        if (Math.hypot(dx,dy) > 6) {
+          state.dragging = true;
+          makeGhost(state.pendingDrag.tool);
+        }
+      }
+      if (!state.dragging) return;
       updateGhostPos(cx, cy);
 
       // If bandaging and a leak exists, we allow "hold while over leak"
@@ -528,7 +593,13 @@
     };
 
     const pointerUp = (ev)=>{
-      if (!state.dragging) return;
+      const hadPending = !!state.pendingDrag;
+      const hadDragging = !!state.dragging;
+      state.pendingDrag = null;
+      if (!hadDragging){
+        // Simple tap on tool: only selection, no drop action
+        return;
+      }
       const cx = ev.clientX ?? (ev.changedTouches?.[0]?.clientX) ?? 0;
       const cy = ev.clientY ?? (ev.changedTouches?.[0]?.clientY) ?? 0;
       const b = clientToBoard(cx, cy);
@@ -552,8 +623,6 @@
           updateHUD();
         }
       } else if (state.currentTool === 'bandage'){
-        // If a leak exists and we ended release; if we were holding successfully, finalize in hold logic; otherwise nothing.
-        // If release occurs before 5s, we cancel the hold.
         cancelBandageHold();
       }
 
@@ -561,6 +630,43 @@
       state.dragging = false;
       if (state.dragEl){ state.dragEl.remove(); state.dragEl = null; }
     };
+
+    // Tap-to-use: allow applying selected tool without dragging
+    spotsEl.addEventListener('click', (ev)=>{
+      if (state.dragging) return; // ignore clicks after drag
+      const targetEl = ev.target.closest('.spot');
+      if (!targetEl) return;
+      const id = Number(targetEl.dataset.id);
+      const spot = state.spots.find(s=>s.id===id);
+      if (!spot) return;
+      if (state.currentTool === 'syringe'){
+        if (!spot.injected) injectAt(spot);
+      } else if (state.currentTool === 'wand'){
+        if (!spot.injected && !spot.revealed && state.wandsLeft>0){
+          state.wandsLeft -= 1;
+          state.wandsUsed += 1;
+          setRevealed(spot, true);
+          updateHUD();
+        }
+      }
+    });
+
+    // Bandage assist: if bandage is selected, pressing near the leak starts the hold (no need to drag)
+    board.addEventListener('pointerdown', (ev)=>{
+      if (state.ended) return;
+      if (state.currentTool !== 'bandage') return;
+      const cx = ev.clientX ?? (ev.touches?.[0]?.clientX) ?? 0;
+      const cy = ev.clientY ?? (ev.touches?.[0]?.clientY) ?? 0;
+      const b = clientToBoard(cx, cy);
+      if (!state.leak) return;
+      const R = 40;
+      if (Math.hypot(b.x - state.leak.x, b.y - state.leak.y) <= R){
+        maybeStartBandageHold();
+      }
+    });
+    board.addEventListener('pointerup', (ev)=>{
+      if (state.currentTool === 'bandage') cancelBandageHold();
+    });
 
     // ---------- Injection & Leak ----------
     const injectAt = (spot)=>{
@@ -661,7 +767,6 @@
       if (spot) {
         spot.sealed = true;
         spot.el.classList.add('disabled');
-        // Small visual: turn outline to neutral
         spot.el.style.outlineColor = '#60a5fa';
       }
       state.leak.bloodEl.remove();
@@ -693,9 +798,15 @@
     };
 
     // ---------- Events ----------
-    toolEls.syringe.addEventListener('pointerdown', e=>toolPointerDown('syringe', e));
-    toolEls.wand.addEventListener('pointerdown', e=>toolPointerDown('wand', e));
-    toolEls.bandage.addEventListener('pointerdown', e=>toolPointerDown('bandage', e));
+    // Side tools
+    if (toolEls.syringe) toolEls.syringe.addEventListener('pointerdown', e=>toolPointerDown('syringe', e));
+    if (toolEls.wand) toolEls.wand.addEventListener('pointerdown', e=>toolPointerDown('wand', e));
+    if (toolEls.bandage) toolEls.bandage.addEventListener('pointerdown', e=>toolPointerDown('bandage', e));
+    // Mobile tray (tap selects; drag works too)
+    if (toolEls.traySyringe) toolEls.traySyringe.addEventListener('pointerdown', e=>toolPointerDown('syringe', e));
+    if (toolEls.trayWand) toolEls.trayWand.addEventListener('pointerdown', e=>toolPointerDown('wand', e));
+    if (toolEls.trayBandage) toolEls.trayBandage.addEventListener('pointerdown', e=>toolPointerDown('bandage', e));
+
     window.addEventListener('pointermove', pointerMove, {passive:false});
     window.addEventListener('pointerup', pointerUp, {passive:false});
     window.addEventListener('touchmove', pointerMove, {passive:false});
