@@ -17,7 +17,7 @@
       --gold:#f59e0b;
     }
     *{box-sizing:border-box}
-    html,body{height:auto;min-height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+    html,body{height:auto;min-height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;overscroll-behavior:none;}
     a{color:var(--accent)}
     .container{
       display:flex;flex-direction:column;min-height:100svh;min-height:100vh;
@@ -165,6 +165,12 @@
     @media (min-width: 1200px){
       .mobile-tray{display:none}
     }
+
+  
+    /* Scroll lock: applied during drags/holds to prevent page sliding */
+    body.noscroll{ position:fixed; overflow:hidden; width:100%; height:100%; touch-action:none; }
+    /* Prevent browser panning/zoom gestures from hijacking drags on the board */
+    .board{ touch-action:none; }
 
   </style>
 </head>
@@ -402,6 +408,7 @@
     };
 
     const endGame = async (reason) => {
+      document.body.classList.remove('noscroll');
       if (state.ended) return;
       state.ended = true;
       clearInterval(state.timerInterval);
@@ -504,6 +511,7 @@
     };
 
     const resetGame = ()=>{
+      document.body.classList.remove('noscroll');
       if (state.leak?.bloodEl) state.leak.bloodEl.remove();
       state.leak = null;
 
@@ -561,6 +569,7 @@
       if (tool==='wand' && state.wandsLeft<=0) return;
       if (tool==='bandage' && state.bandagesLeft<=0) return;
       setActiveTool(tool);
+      document.body.classList.add('noscroll');
       state.pendingDrag = { tool, sx: (ev.clientX || (ev.touches?.[0]?.clientX) || 0), sy: (ev.clientY || (ev.touches?.[0]?.clientY) || 0) };
     };
 
@@ -628,6 +637,7 @@
 
       // end drag
       state.dragging = false;
+      document.body.classList.remove('noscroll');
       if (state.dragEl){ state.dragEl.remove(); state.dragEl = null; }
     };
 
@@ -653,6 +663,7 @@
 
     // Bandage assist: if bandage is selected, pressing near the leak starts the hold (no need to drag)
     board.addEventListener('pointerdown', (ev)=>{
+      document.body.classList.add('noscroll');
       if (state.ended) return;
       if (state.currentTool !== 'bandage') return;
       const cx = ev.clientX ?? (ev.touches?.[0]?.clientX) ?? 0;
@@ -665,6 +676,7 @@
       }
     });
     board.addEventListener('pointerup', (ev)=>{
+      document.body.classList.remove('noscroll');
       if (state.currentTool === 'bandage') cancelBandageHold();
     });
 
