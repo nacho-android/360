@@ -193,19 +193,21 @@
 
   /* Custom editor styling (Custom table) */
   .custom-cell{ position: relative; }
+
+  /* UPDATED: stack fields vertically and keep labels on the right of inputs */
   .custom-editor{
     display: grid;
-    grid-template-columns: 1fr max-content;
-    grid-template-rows: auto auto;
-    gap: 6px 10px;
-    align-items: center;
+    grid-template-columns: 1fr;        /* single column */
+    grid-auto-rows: auto;
+    gap: 6px;
+    align-items: start;
   }
   .custom-editor .name{
-    grid-column: 1 / 2; grid-row: 1;
+    grid-column: 1;
     width: 18ch;
   }
   .custom-editor .field{
-    grid-column: 2 / 3;
+    grid-column: 1;
     display: flex; align-items: center; gap: 6px;
     white-space: nowrap;
   }
@@ -213,6 +215,7 @@
     width: 9ch;
     text-align: right;
   }
+  /* legacy class retained but no longer used on mg/mL */
   .custom-editor .below{
     grid-column: 2 / 3; grid-row: 2;
   }
@@ -336,6 +339,7 @@
   }
 
   /******************** Data sets ********************/
+// [data arrays unchanged...]
   const imSedationMinor = [
     { drug: 'Midazolam', spec: '0.4 mg/kg (5 mg/mL)', kind: 'bolus', rule: mgkg(0.4, 5) },
     { drug: 'Butorphanol', spec: '0.1 mg/kg (10 mg/mL)', kind: 'bolus', rule: mgkg(0.1, 10) },
@@ -376,6 +380,7 @@
   ];
 
   /******************** Build table utilities ********************/
+// [table builders unchanged...]
   function buildDoseTable(sectionId, title, note, rows){
     const tblId = `tbl-${sectionId}`;
     const details = document.createElement('details');
@@ -569,12 +574,12 @@
       customRows.forEach(r => addCustomRow(tbody, r));
     }
 
-  const initW = Number(storage.get('estWeight'));
-  const initA = Number(storage.get('actWeight'));
-  requestAnimationFrame(() => {
-    updateHighlights(Number.isFinite(initW) && initW > 0 ? initW : 20);
-    repositionActualAcrossTables(Number.isFinite(initA) && initA > 0 ? initA : 20);
-  });
+    const initW = Number(storage.get('estWeight'));
+    const initA = Number(storage.get('actWeight'));
+    requestAnimationFrame(() => {
+      updateHighlights(Number.isFinite(initW) && initW > 0 ? initW : 20);
+      repositionActualAcrossTables(Number.isFinite(initA) && initA > 0 ? initA : 20);
+    });
 
     return table;
   }
@@ -612,10 +617,13 @@
     mgkgInput.setAttribute('aria-label', 'Dose mg per kg');
     mgkgInput.value = rowObj.mgkg ?? '';
 
-    mgkgWrap.appendChild(mgkgLabel); mgkgWrap.appendChild(mgkgInput);
+    /* UPDATED: input first, label second (label on the right) */
+    mgkgWrap.appendChild(mgkgInput);
+    mgkgWrap.appendChild(mgkgLabel);
 
     const mgmlWrap = document.createElement('div');
-    mgmlWrap.className = 'field below';
+    /* UPDATED: remove 'below' class so it stacks naturally as the next row */
+    mgmlWrap.className = 'field';
     const mgmlLabel = document.createElement('label'); mgmlLabel.textContent = 'mg/mL';
     const mgmlInput = document.createElement('input');
     mgmlInput.type = 'number'; mgmlInput.step = '0.01'; mgmlInput.min = '0';
@@ -623,7 +631,9 @@
     mgmlInput.setAttribute('aria-label', 'Concentration mg per mL');
     mgmlInput.value = rowObj.mgml ?? '';
 
-    mgmlWrap.appendChild(mgmlLabel); mgmlWrap.appendChild(mgmlInput);
+    /* UPDATED: input first, label second (label on the right) */
+    mgmlWrap.appendChild(mgmlInput);
+    mgmlWrap.appendChild(mgmlLabel);
 
     const delBtn = document.createElement('button');
     delBtn.className = 'custom-del'; delBtn.type = 'button';
