@@ -15,6 +15,9 @@
     --accent:#e0f2fe;  /* estimated weight highlight */
     --actual:#f0fdf4;  /* actual weight column */
     --chip:#eef2ff;
+    --good:#10b981;
+    --warn:#f59e0b;
+    --bad:#ef4444;
   }
 
   html, body{ height:100%; }
@@ -74,7 +77,7 @@
     font-size: .85rem;
   }
 
-  /* Row groups (e.g., Actual input + Update button) */
+  /* Row groups */
   .row{
     display: flex;
     align-items: center;
@@ -111,6 +114,9 @@
   }
   .btn:active{ transform: translateY(1px); }
   .btn.primary{ background:#eef2ff; }
+  .btn.good{ background:#ecfdf5; border-color:#d1fae5; }
+  .btn.warn{ background:#fffbeb; border-color:#fef3c7; }
+  .btn.bad{ background:#fef2f2; border-color:#fee2e2; }
 
   /* Collapsible sections */
   details{
@@ -138,7 +144,7 @@
     padding: 0 0 6px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: contain;
+    overscroll-beavior-x: contain;
   }
   table.sop{
     border-collapse: collapse;
@@ -174,16 +180,11 @@
     background: #f9fafb;
     text-align: left;
     z-index: 2;
-    width: 150px;
-    min-width: 150px;
+    width: 155px;
+    min-width: 155px;
     white-space: normal;
   }
-  .drug-note{
-    display: block;
-    color: var(--muted);
-    font-size: .86rem;
-    font-weight: 500;
-  }
+  .drug-note{ display: block; color: var(--muted); font-size: .86rem; font-weight: 500; }
 
   /* Column highlights */
   .col-highlight{ background: var(--accent); }
@@ -191,62 +192,49 @@
 
   .note{ color: var(--muted); font-size: .9rem; padding: 6px 2px 0; }
 
-  /* Custom editor styling (Custom table) */
+  /* Custom editor */
   .custom-cell{ position: relative; }
-
-  /* UPDATED: stack fields vertically and keep labels on the right of inputs */
   .custom-editor{
     display: grid;
-    grid-template-columns: 1fr;        /* single column */
+    grid-template-columns: 1fr;
     grid-auto-rows: auto;
     gap: 6px;
     align-items: start;
   }
-  .custom-editor .name{
-    grid-column: 1;
-    width: 18ch;
-  }
-  .custom-editor .field{
-    grid-column: 1;
-    display: flex; align-items: center; gap: 6px;
-    white-space: nowrap;
-  }
-  .custom-editor .field input{
-    width: 9ch;
-    text-align: right;
-  }
-  /* legacy class retained but no longer used on mg/mL */
-  .custom-editor .below{
-    grid-column: 2 / 3; grid-row: 2;
-  }
+  .custom-editor .name{ grid-column: 1; width: 18ch; }
+  .custom-editor .field{ grid-column: 1; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .custom-editor .field input{ width: 9ch; text-align: right; }
   .custom-editor input{
-    padding: 8px 10px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    font-size: .95rem;
+    padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: .95rem;
   }
-  .custom-editor label{
-    color: var(--muted);
-    font-size: .9rem;
-    font-weight: 600;
-  }
-
-  /* Delete button (lower-left of first column) */
+  .custom-editor label{ color: var(--muted); font-size: .9rem; font-weight: 600; }
   .custom-del{
-    position: absolute;
-    left: 6px; bottom: 6px;
-    width: 22px; height: 22px;
-    line-height: 20px;
-    text-align: center;
-    border-radius: 6px;
-    border: 1px solid var(--line);
-    background: #fff;
-    cursor: pointer;
-    font-weight: 700;
-    color: #6b7280;
-    padding: 0;
+    position: absolute; left: 6px; bottom: 6px; width: 22px; height: 22px; line-height: 20px;
+    text-align: center; border-radius: 6px; border: 1px solid var(--line); background: #fff; cursor: pointer; font-weight: 700; color: #6b7280; padding: 0;
   }
   .custom-del:active{ transform: translateY(1px); }
+
+  /* Notes */
+  .notes-text{
+    width: 100%; min-height: 64px; max-height: 240px; resize: vertical;
+    padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: .95rem; line-height: 1.3;
+  }
+  .note-row{ position: relative; }
+  .note-del{
+    position: absolute; left: 6px; bottom: 6px; width: 22px; height: 22px; line-height: 20px;
+    text-align: center; border-radius: 6px; border: 1px solid var(--line); background: #fff; cursor: pointer; font-weight: 700; color: #6b7280; padding: 0;
+  }
+  .note-del:active{ transform: translateY(1px); }
+
+  /* Sync table */
+  .sync-field{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .sync-field input[type="text"]{
+    padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: .95rem; min-width: 24ch;
+  }
+  .status{ font-size: .92rem; padding: 6px 0 0; }
+  .status.ok{ color: var(--good); }
+  .status.warn{ color: var(--warn); }
+  .status.err{ color: var(--bad); }
 
   /* Responsive tweaks */
   @media (max-width: 640px){
@@ -255,11 +243,10 @@
     .controls{ gap: 8px; padding: 8px; border-radius: 10px; }
     details{ margin: 10px 0; border-radius: 10px; }
     table.sop th, table.sop td{ padding: 2px 2px; font-size: .95rem; }
-    table.sop td:first-child, table.sop th:first-child{ width: 150px; min-width: 150px; }
+    table.sop td:first-child, table.sop th:first-child{ width: 155px; min-width: 155px; }
     .custom-editor .name{ width: 14ch; }
   }
 </style>
-
 </head>
 <body>
 <header>
@@ -287,12 +274,30 @@
 
 <main class="wrap" id="app"></main>
 
-<script>
-(function(){
+<!-- Firebase + App logic (module) -->
+<script type="module">
+  /******************** Firebase (CDN v9+ modular) ********************/
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
+  import { getDatabase, ref, get, set, onValue, off } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js';
+
+  // TODO: Fill with your project config (Project settings → Your apps)
+  const firebaseConfig = {
+    apiKey: "AIzaSyAI31CvR3dNW_jzl1-A_bOG_ClA8TABdu8",
+    authDomain: "drug-calc-dc52c.firebaseapp.com",
+    databaseURL: "https://drug-calc-dc52c-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "drug-calc-dc52c",
+    storageBucket: "drug-calc-dc52c.firebasestorage.app",
+    messagingSenderId: "301558271217",
+    appId: "1:301558271217:web:ecb1b726c9c9254d13ed50",
+    measurementId: "G-KFR5KK1276"
+  };
+
+  const fbApp = initializeApp(firebaseConfig);
+  const db = getDatabase(fbApp);
+  const pathForId = (id) => `pigcalc/v1/${id}`;
+
   /******************** Data & storage ********************/
   const weights = Array.from({length: ((100-20)/5)+1}, (_,i)=>20 + i*5);
-
-  // Safe storage wrapper (localStorage)
   const storage = {
     get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
     set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} },
@@ -306,7 +311,6 @@
   const ugkgPerHour = (ugPerKgPerH, ugPerMl) => ({ amt: ugPerKgPerH, unit: 'ug_per_kg_per_h', conc: ugPerMl, concUnit: 'ug_per_ml' });
   const mlkg = (mlPerKg) => ({ amt: mlPerKg, unit: 'ml_per_kg' });
 
-  // Decimal places per drug (overrides)
   const DRUG_DP = { propofol:0, ketamine:1, midazolam:1, fentanyl:1, buprenorphine:2, saline:0 };
   function dpFor(drugLabel, override){
     if(override !== undefined && override !== null && override !== '') return Number(override);
@@ -318,7 +322,6 @@
     const dp = dpFor(drugLabel, override);
     return isFinite(n) ? n.toFixed(dp) : '—';
   }
-
   function volFor(weightKg, rule){
     const {amt, unit, conc, concUnit} = rule;
     if(unit === 'ml_per_kg'){ return amt * weightKg; }
@@ -329,7 +332,6 @@
     const conc_mg_per_ml = (concUnit === 'mg_per_ml') ? conc : (conc/1000);
     return dose_mg / conc_mg_per_ml;
   }
-
   function ruleFromRow(tr){
     const amt = parseFloat(tr.dataset.amt);
     const unit = tr.dataset.unit;
@@ -339,7 +341,6 @@
   }
 
   /******************** Data sets ********************/
-// [data arrays unchanged...]
   const imSedationMinor = [
     { drug: 'Midazolam', spec: '0.4 mg/kg (5 mg/mL)', kind: 'bolus', rule: mgkg(0.4, 5) },
     { drug: 'Butorphanol', spec: '0.1 mg/kg (10 mg/mL)', kind: 'bolus', rule: mgkg(0.1, 10) },
@@ -360,14 +361,20 @@
     { drug: 'Fentanyl', spec: '5 µg/kg (50 µg/mL)', kind: 'bolus', rule: ugkg(5, 50) },
     { drug: 'Propofol', spec: '1 mg/kg (10 mg/mL)', kind: 'bolus', rule: mgkg(1, 10) },
   ];
-  const tivaPropofol = [2,4,6,8,10,12].map(r => ({ drug: `${r} mg/kg/h`, spec: '', kind: 'infusion', rule: mgkgPerHour(r, 10), dp: 0 }));
+  const tivaPropofol = [4,5,6].map(r => ({ drug: `${r} mg/kg/h`, spec: '', kind: 'infusion', rule: mgkgPerHour(r, 10), dp: 0 }));
   const tivaMidazolam = [0.1,0.2,0.3,0.4].map(r => ({ drug: `${r} mg/kg/h`, spec: '', kind: 'infusion', rule: mgkgPerHour(r, 1), dp: 1 }));
   const tivaFentanyl  = [1,2,5,10,15].map(r => ({ drug: `${r} µg/kg/h`, spec: '', kind: 'infusion', rule: ugkgPerHour(r, 50), dp: 1 }));
   const other = [
-    { drug: 'Buprenorphine', spec: '0.02 mg/kg<br>(0.3 mg/mL)', kind: 'bolus', rule: mgkg(0.02, 0.3), dp: 2 },
+    { drug: 'Buprenorphine', spec: '0.02 mg/kg (0.3 mg/mL)', kind: 'bolus', rule: mgkg(0.02, 0.3), dp: 2 },
+    { drug: 'Cefazolin', spec: '22 mg/kg (100 mg/mL)', kind: 'bolus', rule: mgkg(22, 100), dp: 1 },
+    { drug: 'Meloxicam', spec: '0.4 mg/kg (20 mg/mL)', kind: 'bolus', rule: mgkg(0.4, 20), dp: 2 },
     { drug: 'Saline', spec: '4 mL/kg/h', kind: 'bolus', rule: mlkg(4), dp: 0 },
     { drug: 'Saline', spec: '5 mL/kg/h', kind: 'bolus', rule: mlkg(5), dp: 0 },
     { drug: 'Saline', spec: '6 mL/kg/h', kind: 'bolus', rule: mlkg(6), dp: 0 },
+  ];
+  const localAnaesthetics = [
+    { drug: 'Lignocaine',   spec: '2 mg/kg (20 mg/mL)', kind: 'bolus', rule: mgkg(2, 20), dp: 1 },
+    { drug: 'Bupivacaine',  spec: '1 mg/kg (5 mg/mL)',  kind: 'bolus', rule: mgkg(1, 5), dp: 1 },
   ];
   const misc = [
     { drug: 'Heparin', initial: '5,000 IU bolus', maint: 'Repeat 2,000 IU after 1 h, then 1,000 IU hourly (Target ACT 250–300 s)' },
@@ -380,7 +387,6 @@
   ];
 
   /******************** Build table utilities ********************/
-// [table builders unchanged...]
   function buildDoseTable(sectionId, title, note, rows){
     const tblId = `tbl-${sectionId}`;
     const details = document.createElement('details');
@@ -491,20 +497,74 @@
     return table;
   }
 
+  function buildIsoprenalineTable(){
+    const details = document.createElement('details');
+    details.id = 'p11-isoprenaline';
+    details.open = (storage.get('open:'+details.id) ?? '1') === '1';
+    details.addEventListener('toggle', ()=> storage.set('open:'+details.id, details.open ? '1' : '0'));
+
+    const summary = document.createElement('summary');
+    summary.innerHTML = `<span>Isoprenaline - Programmed Stimulation</span><span class="meta">Units: mL/h</span>`;
+    details.appendChild(summary);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'table-wrap sync-scroll';
+
+    const table = document.createElement('table');
+    table.className = 'sop';
+    table.id = 'tbl-isoprenaline';
+
+    const thead = document.createElement('thead');
+    const htr = document.createElement('tr');
+    const headers = ['Drug','1.25 µg/min','2.5 µg/min','5 µg/min','7.5 µg/min','10 µg/min'];
+    headers.forEach(h => { const th=document.createElement('th'); th.textContent=h; htr.appendChild(th); });
+    thead.appendChild(htr); table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    const tr = document.createElement('tr');
+
+    const tdName = document.createElement('td');
+    tdName.style.textAlign = 'left';
+    tdName.innerHTML = `<div><strong>Isoprenaline</strong><span class="drug-note">(2.5 µg/mL)</span></div>`;
+    tr.appendChild(tdName);
+
+    const concUgPerMl = 2.5;
+    [1.25, 2.5, 5, 7.5, 10].forEach(rate => {
+      const td = document.createElement('td');
+      const mlPerH = rate * 60 / concUgPerMl;  // mL/H at 2.5 µg/mL
+      td.textContent = fmtByDrug('Isoprenaline', mlPerH, 0);
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+    table.appendChild(tbody);
+
+    const tfoot = document.createElement('tfoot');
+    const ftr = document.createElement('tr');
+    const ftd = document.createElement('td');
+    ftd.colSpan = headers.length;
+    ftd.className = 'note';
+    ftd.textContent = 'Add 1 ml (200 µg) isoprenaline to 79 ml 5% glucose to make 2.5 µg/ml. Administer bolus then continue as CRI. Suggested starting bolus/infusion rate 5 µg(/min).';
+    ftr.appendChild(ftd);
+    tfoot.appendChild(ftr);
+    table.appendChild(tfoot);
+
+    wrap.appendChild(table);
+    details.appendChild(wrap);
+    app.appendChild(details);
+    return table;
+  }
+
   /******************** Custom table (persist + delete) ********************/
   const CUSTOM_KEY = 'customRowsV1';
   function loadCustomRows(){
-    try{
-      const raw = storage.get(CUSTOM_KEY);
-      const rows = raw ? JSON.parse(raw) : [];
-      return Array.isArray(rows) ? rows : [];
-    }catch(e){ return []; }
+    try{ const raw = storage.get(CUSTOM_KEY); const rows = raw ? JSON.parse(raw) : []; return Array.isArray(rows) ? rows : []; }catch(e){ return []; }
   }
   function saveCustomRows(rows){ storage.set(CUSTOM_KEY, JSON.stringify(rows)); }
   function genId(){ return 'r' + Math.random().toString(36).slice(2) + Date.now().toString(36); }
 
-  let customRows = [];   // in-memory mirror
-  let tablesReady = false; // <— prevents early recalcs before setup finishes
+  let customRows = [];
+  let tablesReady = false;
 
   function buildCustomTable(){
     const sectionId = 'p12-custom';
@@ -554,6 +614,7 @@
       if(tablesReady){
         updateHighlights(currentEstimated());
         repositionActualAcrossTables(currentActual());
+        if(!isApplyingRemote) scheduleCloudPush();
       }
     });
     foot.appendChild(addBtn);
@@ -562,7 +623,6 @@
     details.appendChild(wrap);
     app.appendChild(details);
 
-    // Populate from storage (or one blank row)
     const stored = loadCustomRows();
     if(stored.length === 0){
       const rowObj = { id: genId(), name: '', mgkg: '', mgml: '' };
@@ -592,9 +652,8 @@
     tr.dataset.amt = rowObj.mgkg ?? '';
     tr.dataset.conc = rowObj.mgml ?? '';
     tr.dataset.drugLabel = rowObj.name ?? '';
-    tr.dataset.dp = '2'; // force 2 dp (incl. actual column)
+    tr.dataset.dp = '2';
 
-    // First cell: editor + delete button
     const tdName = document.createElement('td');
     tdName.className = 'custom-cell';
     tdName.style.textAlign = 'left';
@@ -616,13 +675,9 @@
     mgkgInput.inputMode = 'decimal'; mgkgInput.placeholder = '0.00';
     mgkgInput.setAttribute('aria-label', 'Dose mg per kg');
     mgkgInput.value = rowObj.mgkg ?? '';
-
-    /* UPDATED: input first, label second (label on the right) */
-    mgkgWrap.appendChild(mgkgInput);
-    mgkgWrap.appendChild(mgkgLabel);
+    mgkgWrap.appendChild(mgkgInput); mgkgWrap.appendChild(mgkgLabel);
 
     const mgmlWrap = document.createElement('div');
-    /* UPDATED: remove 'below' class so it stacks naturally as the next row */
     mgmlWrap.className = 'field';
     const mgmlLabel = document.createElement('label'); mgmlLabel.textContent = 'mg/mL';
     const mgmlInput = document.createElement('input');
@@ -630,10 +685,7 @@
     mgmlInput.inputMode = 'decimal'; mgmlInput.placeholder = '0.00';
     mgmlInput.setAttribute('aria-label', 'Concentration mg per mL');
     mgmlInput.value = rowObj.mgml ?? '';
-
-    /* UPDATED: input first, label second (label on the right) */
-    mgmlWrap.appendChild(mgmlInput);
-    mgmlWrap.appendChild(mgmlLabel);
+    mgmlWrap.appendChild(mgmlInput); mgmlWrap.appendChild(mgmlLabel);
 
     const delBtn = document.createElement('button');
     delBtn.className = 'custom-del'; delBtn.type = 'button';
@@ -650,6 +702,7 @@
         }
         saveCustomRows(customRows);
         if(tablesReady){ repositionActualAcrossTables(currentActual()); }
+        if(!isApplyingRemote) scheduleCloudPush();
       }
     });
 
@@ -661,7 +714,6 @@
     tdName.appendChild(delBtn);
     tr.appendChild(tdName);
 
-    // Data cells (— initially)
     weights.forEach(w=>{
       const td = document.createElement('td');
       td.dataset.w = String(w);
@@ -669,13 +721,11 @@
       tr.appendChild(td);
     });
 
-    // Render helper for this row
     function renderRow(){
       tr.dataset.drugLabel = nameInput.value || '';
       tr.dataset.amt = mgkgInput.value || '';
       tr.dataset.conc = mgmlInput.value || '';
 
-      // Update persisted model
       const idx = customRows.findIndex(r => r.id === rowObj.id);
       if(idx !== -1){
         customRows[idx] = {
@@ -687,16 +737,15 @@
         saveCustomRows(customRows);
       }
 
-      // Update each weight column
       weights.forEach(w=>{
         const td = tr.querySelector(`td[data-w="${w}"]`);
         const rule = ruleFromRow(tr);
         const mL = volFor(w, rule);
-        td.textContent = fmtByDrug(tr.dataset.drugLabel, mL, 2); // force 2 dp
+        td.textContent = fmtByDrug(tr.dataset.drugLabel, mL, 2);
       });
 
-      // Only try to reposition after setup is complete
       if(tablesReady){ repositionActualAcrossTables(currentActual()); }
+      if(!isApplyingRemote) scheduleCloudPush();
     }
 
     nameInput.addEventListener('input', renderRow);
@@ -704,42 +753,399 @@
     mgmlInput.addEventListener('input', renderRow);
 
     tbody.appendChild(tr);
-    renderRow(); // safe: guarded by tablesReady
+    renderRow();
+  }
+
+  function rebuildCustomTableFromModel(){
+    const table = document.getElementById('tbl-custom');
+    const tbody = table.tBodies[0];
+    tbody.innerHTML = '';
+    customRows.forEach(r => addCustomRow(tbody, r));
+    updateHighlights(currentEstimated());
+    repositionActualAcrossTables(currentActual());
+  }
+
+  /******************** Notes (persistent) ********************/
+  const NOTES_KEY = 'notesRowsV1';
+  function loadNotes(){
+    try{ const raw = storage.get(NOTES_KEY); const rows = raw ? JSON.parse(raw) : []; return Array.isArray(rows) ? rows : []; }catch(e){ return []; }
+  }
+  function saveNotes(rows){ storage.set(NOTES_KEY, JSON.stringify(rows)); }
+
+  let notesRows = [];
+
+  function buildNotesTable(){
+    const details = document.createElement('details');
+    details.id = 'p13-notes';
+    details.open = (storage.get('open:'+details.id) ?? '1') === '1';
+    details.addEventListener('toggle', ()=> storage.set('open:'+details.id, details.open ? '1' : '0'));
+
+    const summary = document.createElement('summary');
+    summary.innerHTML = `<span>Notes</span><span class="meta"></span>`;
+    details.appendChild(summary);
+
+    const wrap = document.createElement('div'); wrap.className = 'table-wrap';
+
+    const table = document.createElement('table'); table.className = 'sop'; table.id = 'tbl-notes';
+    const thead = document.createElement('thead');
+    const trh = document.createElement('tr');
+    thead.appendChild(trh); table.appendChild(thead);
+
+    const tbody = document.createElement('tbody'); table.appendChild(tbody);
+
+    wrap.appendChild(table);
+
+    const foot = document.createElement('div'); foot.className = 'note';
+    const addBtn = document.createElement('button'); addBtn.className='btn'; addBtn.textContent='Add note';
+    addBtn.addEventListener('click', ()=>{
+      const row = { id: genId(), text: '' };
+      notesRows.push(row);
+      saveNotes(notesRows);
+      addNoteRow(tbody, row);
+      if(!isApplyingRemote) scheduleCloudPush();
+    });
+    foot.appendChild(addBtn);
+
+    const hint = document.createElement('div'); hint.className='note';
+    hint.textContent = 'Notes are saved locally and included in cloud sync.';
+    wrap.appendChild(foot);
+    wrap.appendChild(hint);
+
+    details.appendChild(wrap);
+    app.appendChild(details);
+
+    const stored = loadNotes();
+    if(stored.length === 0){
+      notesRows = [{ id: genId(), text: '' }];
+      saveNotes(notesRows);
+    }else{
+      notesRows = stored;
+    }
+    notesRows.forEach(n => addNoteRow(tbody, n));
+    return table;
+  }
+
+  function addNoteRow(tbody, row){
+    const tr = document.createElement('tr'); tr.className='note-row'; tr.dataset.id = row.id;
+    const td = document.createElement('td'); td.style.textAlign='left';
+
+    const ta = document.createElement('textarea'); ta.className='notes-text';
+    ta.placeholder = 'Type a note…';
+    ta.value = row.text || '';
+    ta.addEventListener('input', ()=>{
+      const idx = notesRows.findIndex(n => n.id === row.id);
+      if(idx !== -1){ notesRows[idx] = { id: row.id, text: ta.value }; saveNotes(notesRows); }
+      if(!isApplyingRemote) scheduleCloudPush();
+    });
+
+    const del = document.createElement('button'); del.className='note-del'; del.textContent='×'; del.title='Delete note';
+    del.addEventListener('click', ()=>{
+      if(confirm('Delete this note?')){
+        tr.remove();
+        notesRows = notesRows.filter(n => n.id !== row.id);
+        if(notesRows.length === 0){
+          const r = { id: genId(), text: '' };
+          notesRows.push(r);
+          addNoteRow(tbody, r);
+        }
+        saveNotes(notesRows);
+        if(!isApplyingRemote) scheduleCloudPush();
+      }
+    });
+
+    td.appendChild(ta);
+    td.appendChild(del);
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  }
+
+  function rebuildNotesFromModel(){
+    const table = document.getElementById('tbl-notes');
+    const tbody = table.tBodies[0];
+    tbody.innerHTML = '';
+    (notesRows.length ? notesRows : [{ id: genId(), text: '' }]).forEach(n => addNoteRow(tbody, n));
+  }
+
+  /******************** Cloud Sync / Backup (Firebase RTDB; auto, no password) ********************/
+  const SYNC_ID_KEY = 'syncIdV1';
+  const SYNC_LAST_KEY = 'syncLastAtV1';
+  const CLIENT_ID = 'c-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+  function saveSyncId(id){ storage.set(SYNC_ID_KEY, id||''); }
+  function loadSyncId(){ return storage.get(SYNC_ID_KEY) || ''; }
+  function saveLastSync(){ storage.set(SYNC_LAST_KEY, new Date().toISOString()); }
+  function loadLastSync(){ return storage.get(SYNC_LAST_KEY) || ''; }
+
+  function sanitizeId(id){
+    // Firebase path cannot include . # $ [ ]
+    return String(id||'').trim().replace(/[.#$\[\]]/g,'-');
+  }
+
+  function modelForSync(){
+    return {
+      version: 1,
+      updatedAt: new Date().toISOString(),
+      clientId: CLIENT_ID,
+      data: {
+        customRows: customRows,
+        notesRows: notesRows,
+      }
+    };
+  }
+
+  function applyModelFromCloud(model){
+    if(!model || !model.data) throw new Error('Invalid cloud payload');
+    customRows = Array.isArray(model.data.customRows) ? model.data.customRows : [];
+    notesRows  = Array.isArray(model.data.notesRows)  ? model.data.notesRows  : [];
+    saveCustomRows(customRows);
+    saveNotes(notesRows);
+    rebuildCustomTableFromModel();
+    rebuildNotesFromModel();
+  }
+
+  // Sync state shared with UI + change hooks
+  let activeId = loadSyncId();
+  let currentRef = null;
+  let currentCallback = null;
+  let isApplyingRemote = false;
+  let isPushing = false;
+  let readyToSync = false;
+  let lastRemoteAt = 0;
+  let lastPushedAt = 0;
+  let pushTimer = null;
+
+  // Will be replaced after sync table builds; used by Custom/Notes to queue pushes
+  let scheduleCloudPush = ()=>{};
+
+  function buildSyncTable(){
+    const details = document.createElement('details');
+    details.id = 'p14-sync';
+    details.open = (storage.get('open:'+details.id) ?? '1') === '1';
+    details.addEventListener('toggle', ()=> storage.set('open:'+details.id, details.open ? '1' : '0'));
+
+    const summary = document.createElement('summary');
+    summary.innerHTML = `<span>Cloud Sync</span>`;
+    details.appendChild(summary);
+
+    const wrap = document.createElement('div'); wrap.className='table-wrap';
+
+    const table = document.createElement('table'); table.className='sop'; table.id='tbl-sync';
+
+    // No thead — by request
+    const tbody = document.createElement('tbody');
+
+    // Row: Sync ID (editable) + Generate + conditional Set ID
+    const rId = document.createElement('tr');
+    const cIdL = document.createElement('td'); cIdL.textContent='Sync ID'; rId.appendChild(cIdL);
+    const cIdV = document.createElement('td'); cIdV.className='sync-field';
+
+    const idField = document.createElement('input');
+    idField.type='text';
+    idField.placeholder='e.g. my-shared-id-123';
+    idField.value = activeId;
+
+    const btnGen = document.createElement('button'); btnGen.className='btn'; btnGen.textContent='Generate ID';
+    btnGen.title='Generate a random ID (will take effect after Set ID)';
+    const btnSet = document.createElement('button'); btnSet.className='btn good'; btnSet.textContent='Set ID';
+    btnSet.style.display = 'none'; // appears only when changed
+
+    cIdV.appendChild(idField); cIdV.appendChild(btnGen); cIdV.appendChild(btnSet);
+    rId.appendChild(cIdV); tbody.appendChild(rId);
+
+    // Row: Status
+    const rSt = document.createElement('tr');
+    const cStL = document.createElement('td'); cStL.textContent='Status'; rSt.appendChild(cStL);
+    const cStV = document.createElement('td');
+    const statusEl = document.createElement('div'); statusEl.className='status';
+    const last = loadLastSync(); if(last){ statusEl.textContent = `Last push: ${new Date(last).toLocaleString()}`; }
+    cStV.appendChild(statusEl); rSt.appendChild(cStV); tbody.appendChild(rSt);
+
+    // Row: Info
+    const rInfo = document.createElement('tr');
+    const cInfoL = document.createElement('td'); cInfoL.textContent='Info'; rInfo.appendChild(cInfoL);
+    const cInfoV = document.createElement('td');
+    cInfoV.innerHTML = `
+      <div class="note">Sync is automatic. Anyone with the Sync ID can read and write data; create a new Sync ID for sharing. Do not store sensitive information.</div>`;
+    rInfo.appendChild(cInfoV); tbody.appendChild(rInfo);
+
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    details.appendChild(wrap);
+    app.appendChild(details);
+
+    function setStatus(msg, kind){
+      statusEl.textContent = msg;
+      statusEl.classList.remove('ok','warn','err');
+      if(kind) statusEl.classList.add(kind);
+    }
+
+    function showSetButtonIfChanged(){
+      const v = sanitizeId(idField.value);
+      btnSet.style.display = (v && v !== activeId) ? '' : 'none';
+    }
+
+    idField.addEventListener('input', showSetButtonIfChanged);
+
+    btnGen.addEventListener('click', ()=>{
+      const rid = 'id-' + Math.random().toString(36).slice(2,10) + '-' + Math.random().toString(36).slice(2,8);
+      idField.value = rid;
+      showSetButtonIfChanged();
+      setStatus('Generated ID. Click “Set ID” to start syncing with it.', 'ok');
+    });
+
+    btnSet.addEventListener('click', async ()=>{
+      const newId = sanitizeId(idField.value);
+      if(!newId){ setStatus('Please enter a valid ID.', 'warn'); return; }
+      await startSyncWithId(newId, {seedFromRemote:true});
+      btnSet.style.display='none';
+      setStatus(`Switched to ID: ${newId} (live)`, 'ok');
+    });
+
+    // Provide debounced push function for other tables
+    scheduleCloudPush = function schedulePush(){
+      if(!readyToSync || !activeId || !currentRef) return;
+      if(isApplyingRemote) return; // don't echo remote data back
+      if(pushTimer) clearTimeout(pushTimer);
+      pushTimer = setTimeout(async ()=>{
+        try{
+          isPushing = true;
+          const payload = modelForSync();
+          await set(currentRef, payload);
+          lastPushedAt = Date.now();
+          saveLastSync();
+          setStatus(`Pushed at ${new Date(lastPushedAt).toLocaleTimeString()}`, 'ok');
+        }catch(err){
+          setStatus('Push error: ' + err.message, 'err');
+        }finally{
+          isPushing = false;
+        }
+      }, 500); // debounce
+    };
+
+    // Start initial sync if we already have an ID
+    if(activeId){
+      startSyncWithId(activeId, {seedFromRemote:true}).then(()=>{
+        setStatus(`Listening to ID: ${activeId}`, 'ok');
+      }).catch(err=> setStatus('Sync error: ' + err.message, 'err'));
+    }else{
+      setStatus('Not syncing (no ID). Enter an ID or Generate one.', 'warn');
+    }
+
+    return table;
+
+    /******** attach/detach + initial reconcile ********/
+    async function startSyncWithId(newId, opts={seedFromRemote:true}){
+      // Detach old listener
+      if(currentRef && currentCallback){ off(currentRef, 'value', currentCallback); }
+      activeId = newId;
+      saveSyncId(activeId);
+
+      currentRef = ref(db, pathForId(activeId));
+      // First reconcile: if remote exists, load it; else push local model
+      const snap = await get(currentRef);
+      if(snap.exists()){
+        const remote = snap.val();
+        // Apply remote only if it's not ours (or just apply anyway to match remote)
+        isApplyingRemote = true;
+        try{
+          applyModelFromCloud(remote);
+          lastRemoteAt = Date.parse(remote.updatedAt || Date.now());
+        }finally{
+          isApplyingRemote = false;
+        }
+      }else{
+        // Seed remote with our current local state
+        const payload = modelForSync();
+        await set(currentRef, payload);
+        lastPushedAt = Date.now();
+        saveLastSync();
+      }
+
+      // Attach live listener
+      currentCallback = (snap)=>{
+        const v = snap.val();
+        if(!v) return;
+        // Ignore echoes of our own write
+        if(v.clientId === CLIENT_ID) return;
+        // Apply newer remote
+        const rAt = Date.parse(v.updatedAt || 0);
+        if(!isFinite(rAt) || rAt <= lastRemoteAt) return;
+        lastRemoteAt = rAt;
+        isApplyingRemote = true;
+        try{
+          applyModelFromCloud(v);
+        }catch(e){
+          console.error(e);
+        }finally{
+          isApplyingRemote = false;
+        }
+      };
+      onValue(currentRef, currentCallback);
+
+      readyToSync = true;
+    }
+  }
+
+  /******************** About table (single non-bold header; collapsed by default) ********************/
+  function buildAboutTable(){
+    const details = document.createElement('details');
+    details.id = 'p15-about';
+    // default CLOSED unless previously opened
+    details.open = (storage.get('open:'+details.id) ?? '0') === '1';
+    details.addEventListener('toggle', ()=> storage.set('open:'+details.id, details.open ? '1' : '0'));
+
+    const summary = document.createElement('summary');
+    summary.innerHTML = `<span>About</span><span class="meta"></span>`;
+    details.appendChild(summary);
+
+    const wrap = document.createElement('div'); wrap.className='table-wrap';
+    const table = document.createElement('table'); table.className='sop'; table.id='tbl-about';
+
+    const thead = document.createElement('thead');
+    const trh = document.createElement('tr');
+    const th = document.createElement('th');
+    th.textContent = 'Created by Alan Marcus - Version 20251028_1256';
+    th.style.fontWeight = 'normal'; // not bold
+    trh.appendChild(th); thead.appendChild(trh); table.appendChild(thead);
+
+    const tbody = document.createElement('tbody'); table.appendChild(tbody);
+
+    wrap.appendChild(table);
+    details.appendChild(wrap);
+    app.appendChild(details);
+    return table;
   }
 
   /******************** App root ********************/
   const app = document.getElementById('app');
 
-  // Build all sections
   const tbl1  = buildDoseTable('p5-im-minor', 'IM Sedation for Minor Procedures', '', imSedationMinor);
   const tbl1b = buildDoseTable('p5-im-reversal', 'IM Reversal', 'Use 2–4× the medetomidine dose', imReversal);
   const tbl1c = buildDoseTable('p5-im-premed', 'IM Premedication for Longer Procedures', '', imPremedLonger);
-
   const tbl2  = buildDoseTable('p6-iv-bolus', 'IV Boluses / Induction', '', ivBoluses);
-
   const tbl3a = buildDoseTable('p8-tiva-prop', 'TIVA — Propofol (10 mg/mL)', '', tivaPropofol);
   const tbl3b = buildDoseTable('p8-tiva-mid', 'TIVA — Midazolam (1 mg/mL)', '', tivaMidazolam);
   const tbl3c = buildDoseTable('p8-tiva-fent', 'TIVA — Fentanyl (50 µg/mL)', '', tivaFentanyl);
-
-  const tblOther = buildDoseTable('p9-other', 'Other', '', [
-    ...other
-  ]);
-
+  const tblOther = buildDoseTable('p9-other', 'Other', '', [ ...other ]);
+  const tblLocal = buildDoseTable('p9-local', 'Local Anaesthetics - Topical / Injection', '', localAnaesthetics);
   const tbl4  = buildMiscTable();
-
+  const tblIso = buildIsoprenalineTable();
   const tblCustom = buildCustomTable();
 
-  // Tables used for highlights & actual column placement
-  const allTables = [tbl1, tbl1b, tbl1c, tbl2, tbl3a, tbl3b, tbl3c, tblOther, tblCustom];
+  // New sections
+  const tblNotes = buildNotesTable();
+  const tblSync  = buildSyncTable();
+  const tblAbout = buildAboutTable();
+
+  // Weight-based tables for highlight/actual insertion
+  const allTables = [tbl1, tbl1b, tbl1c, tbl2, tbl3a, tbl3b, tbl3c, tblOther, tblLocal, tblCustom];
 
   /******************** Estimated & actual controls ********************/
   const estSelect = document.getElementById('estWeightSelect');
   const actInput = document.getElementById('actWeight');
   const applyBtn = document.getElementById('applyActual');
 
-  let estVal = 20; // default
-
-  // Populate options 20..100 step 5
+  let estVal = 20;
   weights.forEach(w => {
     const opt = document.createElement('option');
     opt.value = String(w);
@@ -768,10 +1174,8 @@
     storage.set('estWeight', String(estVal));
   }
 
-  // Select-all behaviour
   actInput.addEventListener('focus', () => {requestAnimationFrame(() => actInput.select());});
-  actInput.addEventListener('mouseup', (e) => e.preventDefault());
-  actInput.addEventListener('pointerup', (e) => e.preventDefault());
+  ['mouseup','pointerup'].forEach(ev => actInput.addEventListener(ev, (e)=> e.preventDefault()));
 
   function syncActual(val){
     const v = Math.max(1, Math.min(300, Number(val)));
@@ -792,35 +1196,24 @@
       tbl.querySelectorAll(`tbody td[data-w="${w}"]`).forEach(td=>td.classList.add('col-highlight'));
     });
   }
-
   function insertionIndexForWeight(tbl, weight){
     let countLE = 0;
     for(const w of weights){ if(weight >= w) countLE++; }
     return 1 + countLE;
   }
-
   function repositionActualAcrossTables(weight){
     allTables.forEach(tbl=> repositionActualForTable(tbl, weight));
   }
-
   function repositionActualForTable(tbl, weight){
     const theadRow = tbl.tHead.rows[0];
     const tbody = tbl.tBodies[0];
-
-    // Remove any existing actual column
     theadRow.querySelectorAll('th.actual-col').forEach(el=>el.remove());
     tbody.querySelectorAll('td.actual-col').forEach(el=>el.remove());
-
-    // Compute insertion index
     const insertIdx = insertionIndexForWeight(tbl, weight);
-
-    // Header cell
     const thAct = document.createElement('th');
     thAct.className = 'actual-col';
     thAct.textContent = `[${weight.toFixed(1)} kg]`;
     theadRow.insertBefore(thAct, theadRow.children[insertIdx] || null);
-
-    // Body cells
     Array.from(tbody.rows).forEach(tr=>{
       const td = document.createElement('td');
       td.className = 'actual-col';
@@ -845,14 +1238,11 @@
   });
 
   /******************** Initial render ********************/
-  // mark tables as ready BEFORE we do first highlight/reposition so Custom's early renders are safe to trigger later
   tablesReady = true;
-
   const savedEst = Number(storage.get('estWeight'));
   const savedAct = Number(storage.get('actWeight'));
   setEstimated(isFinite(savedEst) && savedEst > 0 ? savedEst : 20);
   syncActual(isFinite(savedAct) && savedAct > 0 ? savedAct : 20.0);
-})();
 </script>
 </body>
 </html>
