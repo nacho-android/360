@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Reset Database – Pig Heart Injection Leaderboard</title>
+  <style>
+    :root{ --bg:#0b1020; --panel:#121a36; --text:#e5e7eb; --muted:#9ca3af; }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+    main{min-height:100%;display:flex;align-items:center;justify-content:center;padding:16px}
+    .card{background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;max-width:640px;width:100%}
+    h1{margin:0 0 10px 0}
+    input[type=password], input[type=text]{width:100%;background:#0b122a;color:#e5e7eb;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px 12px;margin:6px 0}
+    button{background:#1b2450;color:#fff;border:1px solid rgba(255,255,255,0.18);padding:10px 14px;border-radius:10px;cursor:pointer}
+    .muted{color:var(--muted)}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="card">
+      <h1>Clear Leaderboard Data</h1>
+      <p class="muted">This will permanently delete all results under <code>results/</code> in your Firebase Realtime Database.</p>
+      <p>Optionally set a passphrase to avoid accidental presses (client-side only):</p>
+      <input id="pass" type="password" placeholder="Passphrase (optional)">
+      <button id="clearBtn">Delete All Results</button>
+      <div id="msg" class="muted" style="margin-top:10px"></div>
+      <p style="margin-top:16px"><a href="leaderboard.html" style="color:#7dd3fc">← Back to Leaderboard</a></p>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import { getDatabase, ref, remove } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
+    import { firebaseConfig } from "./firebase-config.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const passInput = document.getElementById('pass');
+    const clearBtn = document.getElementById('clearBtn');
+    const msg = document.getElementById('msg');
+
+    clearBtn.addEventListener('click', async ()=>{
+      if (!confirm("Are you absolutely sure? This cannot be undone.")) return;
+      const required = (localStorage.getItem('heartgame_reset_pass') || '').trim();
+      const provided = (passInput.value || '').trim();
+      if (required && provided !== required){
+        msg.textContent = "Passphrase mismatch.";
+        return;
+      }
+      try{
+        await remove(ref(db, 'results'));
+        msg.textContent = "All results deleted.";
+      }catch(e){
+        console.error(e);
+        msg.textContent = "Failed to delete results. Check your database rules/permissions.";
+      }
+    });
+
+    // Store passphrase locally if user enters one (to protect accidental clears on this device)
+    passInput.addEventListener('change', ()=>{
+      localStorage.setItem('heartgame_reset_pass', passInput.value.trim());
+    });
+  </script>
+</body>
+</html>

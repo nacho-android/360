@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Pig Heart Stem-Cell Injection – Surgical Game</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#121a36;
+      --accent:#7dd3fc;
+      --accent2:#fca5a5;
+      --good:#22c55e;
+      --bad:#ef4444;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --gold:#f59e0b;
+    }
+    *{box-sizing:border-box}
+    html,body{height:auto;min-height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;overscroll-behavior:none;}
+    a{color:var(--accent)}
+    .container{
+      display:flex;flex-direction:column;min-height:100svh;min-height:100vh;
+    }
+    header{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:10px 14px;background:linear-gradient(180deg,rgba(18,26,54,0.94),rgba(18,26,54,0.88));
+      border-bottom:1px solid rgba(255,255,255,0.06);backdrop-filter: blur(6px);position:sticky;top:0;z-index:10;
+    }
+    .brand{display:flex;gap:10px;align-items:center}
+    .brand .heart{width:22px;height:22px;transform-origin:center;animation:beat 1s infinite ease-in-out}
+    @keyframes beat{
+      0%{transform:scale(1)} 25%{transform:scale(1.05)} 50%{transform:scale(0.98)} 75%{transform:scale(1.06)} 100%{transform:scale(1)}
+    }
+    .hud{
+      display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:flex-end;
+      font-size:14px;color:var(--muted)
+    }
+    .hud .pill{background:#111829;border:1px solid rgba(255,255,255,0.08);border-radius:999px;padding:6px 10px;color:var(--text);display:flex;gap:8px;align-items:center}
+    .hud .dot{width:10px;height:10px;border-radius:50%}
+    .hud .bt{background:var(--panel);border:1px solid rgba(255,255,255,0.08);padding:6px 10px;border-radius:10px;cursor:pointer;color:var(--text)}
+    .hud .bt:disabled{opacity:0.5;cursor:not-allowed}
+
+    main{display:flex;gap:16px;padding:16px;flex:1;flex-wrap:wrap}
+    .tools{
+      width:320px;max-width:100%;background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:12px
+    }
+    .toolgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .tool{
+      background:#0f1730;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;user-select:none;touch-action:none;position:relative
+    }
+    .tool[data-disabled="true"]{opacity:0.5;pointer-events:none}
+    .tool .icon{font-size:28px;line-height:1}
+    .tool .name{font-size:12px;color:var(--muted)}
+    .tool .count{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.12);padding:2px 6px;border-radius:999px;font-size:12px}
+    .tool.active{outline:2px solid var(--accent)}
+
+    .boardwrap{flex:1;min-width:300px;display:flex;flex-direction:column;gap:12px}
+    .board{
+      position:relative;flex:1;min-height:520px;background:#0c142b;border:1px solid rgba(255,255,255,0.08);border-radius:18px;overflow:hidden
+    }
+    .heart-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+    .spots{position:absolute;inset:0}
+    .spot{
+      position:absolute;width:28px;height:28px;border-radius:50%;transform:translate(-50%,-50%);
+      background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), rgba(255,255,255,0.08) 60%, rgba(0,0,0,0.2));
+      border:1px solid rgba(255,255,255,0.2);
+      box-shadow:0 6px 14px rgba(0,0,0,0.35), inset 0 0 6px rgba(255,255,255,0.12);
+    }
+    .spot .mark{position:absolute;inset:0;border-radius:inherit;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;opacity:0;transition:opacity .15s}
+    .spot.revealed.safe .mark{opacity:1;background:rgba(34,197,94,0.35)}
+    .spot.revealed.danger .mark{opacity:1;background:rgba(239,68,68,0.35)}
+    .spot.injected.safe{outline:3px solid var(--good)}
+    .spot.injected.danger{outline:3px solid var(--bad)}
+    .spot.disabled{filter:grayscale(0.8);opacity:0.6}
+
+    .drag-ghost{
+      position:fixed;top:0;left:0;pointer-events:none;transform:translate(-50%,-50%);z-index:1000;
+      filter: drop-shadow(0 8px 22px rgba(0,0,0,0.6));
+    }
+    .blood{
+      position:absolute;width:120px;height:120px;transform:translate(-50%,-50%);pointer-events:none;
+    }
+    .blood .spray{
+      position:absolute;inset:0;border-radius:50%;
+      background:radial-gradient(circle at 50% 50%, rgba(255,0,0,0.8), rgba(255,0,0,0.2) 60%, rgba(255,0,0,0) 70%);
+      animation:bloodspray .5s infinite;
+      filter:blur(1px);
+    }
+    @keyframes bloodspray{
+      0%{transform:scale(0.7);opacity:0.9}
+      50%{transform:scale(1.15);opacity:0.6}
+      100%{transform:scale(0.8);opacity:0.85}
+    }
+    .leak-timer{
+      position:absolute;transform:translate(-50%,-50%);top: -26px;left: 0;
+      background:rgba(0,0,0,0.6);color:#fff;border:1px solid rgba(255,255,255,0.15);
+      border-radius:8px;padding:2px 6px;font-size:12px
+    }
+    .hold-progress{
+      position:absolute;transform:translate(-50%,-50%);top: 28px;left: 0;
+      background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.18);
+      border-radius:8px;padding:2px 6px;font-size:12px
+    }
+
+    .panel{
+      background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:10px;font-size:14px;color:var(--muted)
+    }
+    .legend{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .legend .key{display:flex;gap:6px;align-items:center;background:#0f1730;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:6px 8px;color:#cbd5e1}
+    .legend .box{width:14px;height:14px;border-radius:4px}
+    .legend .box.safe{background:rgba(34,197,94,0.5)}
+    .legend .box.danger{background:rgba(239,68,68,0.5)}
+
+    .overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:10000;
+    }
+    .card{
+      width:min(720px,92vw);background:#0e1530;border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,0.6)
+    }
+    .card h1{margin:0 0 12px 0}
+    .field{display:flex;gap:10px;align-items:center;margin:8px 0}
+    input[type=text]{flex:1;background:#0b122a;color:#e5e7eb;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px 12px;font-size:16px}
+    button{
+      background:linear-gradient(180deg,#1f2a5a,#18224a);color:#fff;border:1px solid rgba(255,255,255,0.18);
+      padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600
+    }
+    button:disabled{opacity:0.6;cursor:not-allowed}
+
+    .footer{
+      display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px
+    }
+    .notice{font-size:12px;color:#93c5fd}
+
+    /* Heart SVG accent pulse */
+    .beat { animation:beat 1s infinite ease-in-out; }
+
+    /* Mobile friendly */
+    @media (max-width: 900px){
+      .tools{display:none}
+      .mobile-tray{display:flex}
+      main{padding-bottom:110px}
+      .board{min-height:480px}
+    }
+
+    /* Mobile bottom tool tray */
+    .mobile-tray{
+      position:fixed;left:50%;transform:translateX(-50%);
+      bottom:calc(10px + env(safe-area-inset-bottom));z-index:10001;
+      display:flex;gap:10px;padding:8px;
+      background:rgba(17,24,39,0.9);backdrop-filter:blur(8px);
+      border:1px solid rgba(255,255,255,0.12);border-radius:14px;
+      box-shadow:0 12px 30px rgba(0,0,0,0.5);
+    }
+    .tray-btn{
+      display:flex;flex-direction:column;align-items:center;gap:4px;
+      background:#0f1730;border:1px solid rgba(255,255,255,0.12);
+      border-radius:12px;padding:8px 10px;min-width:64px;user-select:none
+    }
+    .tray-btn .icon{font-size:22px;line-height:1}
+    .tray-btn .label{font-size:11px;color:#cbd5e1}
+    .tray-btn .count{font-size:11px;color:#93c5fd}
+    .tray-btn.active{outline:2px solid var(--accent)}
+  
+    @media (min-width: 1200px){
+      .mobile-tray{display:none}
+    }
+
+  
+    /* Scroll lock: applied during drags/holds to prevent page sliding */
+    body.noscroll{ position:fixed; overflow:hidden; width:100%; height:100%; touch-action:none; }
+    /* Prevent browser panning/zoom gestures from hijacking drags on the board */
+    .board{ touch-action:none; }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <svg class="heart" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path fill="#f87171" d="M47.5,6C41.2,6,36,10.3,32,16C28,10.3,22.8,6,16.5,6C7.9,6,1,13.4,1,22.7C1,41.1,32,58,32,58s31-16.9,31-35.3C63,13.4,56.1,6,47.5,6z"/>
+        </svg>
+        <strong>Pig Heart Stem-Cell Injection</strong>
+      </div>
+      <div class="hud">
+        <div class="pill"><span class="dot" style="background:var(--gold)"></span><span id="playerNameHUD">—</span></div>
+        <div class="pill">Successful injections: <strong id="successCount">0</strong>/8</div>
+        <div class="pill">Bandages left: <strong id="bandagesLeft">3</strong></div>
+        <div class="pill">Wands left: <strong id="wandsLeft">3</strong></div>
+        <div class="pill">Time: <strong id="timer">00:00.0</strong></div>
+        <button id="resetBtn" class="bt">Restart</button>
+        <a class="bt" href="leaderboard.html">Leaderboard</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="tools">
+        <div class="panel"><strong>Tools</strong></div>
+        <div class="toolgrid">
+          <div class="tool" id="tool-syringe" data-tool="syringe">
+            <div class="count" id="syringeCount">∞</div>
+            <div class="icon">💉</div>
+            <div class="name">Syringe</div>
+          </div>
+          <div class="tool" id="tool-wand" data-tool="wand">
+            <div class="count" id="wandCount">3</div>
+            <div class="icon">🪄</div>
+            <div class="name">Epicardial Wand</div>
+          </div>
+          <div class="tool" id="tool-bandage" data-tool="bandage">
+            <div class="count" id="bandageCount">3</div>
+            <div class="icon">🩹</div>
+            <div class="name">Bandage</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="legend">
+            <div class="key"><div class="box safe"></div> Safe (inject)</div>
+            <div class="key"><div class="box danger"></div> Dangerous (rupture)</div>
+            <div class="key">Drag a tool and release over a spot. On mobile, you can also tap a tool, then tap a spot.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="boardwrap">
+        <div class="board" id="board">
+          <!-- Beating heart background (stylized SVG) -->
+          <svg class="heart-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <radialGradient id="g1" cx="50%" cy="40%" r="60%">
+                <stop offset="0%" stop-color="#991b1b" stop-opacity="0.9"/>
+                <stop offset="60%" stop-color="#7f1d1d" stop-opacity="0.8"/>
+                <stop offset="100%" stop-color="#111827" stop-opacity="0.9"/>
+              </radialGradient>
+              <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                <feDropShadow dx="0" dy="9" stdDeviation="6" flood-color="#000" flood-opacity="0.6"/>
+              </filter>
+            </defs>
+            <!-- Thoracotomy opening + heart -->
+            <ellipse cx="50" cy="50" rx="44" ry="34" fill="#030712" opacity="0.9" />
+            <g class="beat">
+              <path d="M67,24c-8,0-14,5-17,11c-3-6-9-11-17-11c-10,0-18,8-18,18c0,26,35,41,35,41s35-15,35-41C85,32,77,24,67,24z"
+                fill="url(#g1)" filter="url(#shadow)"/>
+            </g>
+            <!-- subtle arteries/veins lines -->
+            <path d="M35,45 Q50,30 65,45" stroke="#fecaca" stroke-opacity="0.25" stroke-width="1.2" fill="none"/>
+            <path d="M30,55 Q50,40 70,58" stroke="#93c5fd" stroke-opacity="0.2" stroke-width="1" fill="none"/>
+          </svg>
+          <div class="spots" id="spots"></div>
+        </div>
+
+        <div class="panel notice">
+          Aim: safely inject stem cells into <strong>8</strong> spots. There are 15 safe and 5 dangerous spots.
+          You can probe a spot with the epicardial wand (only 3 uses). If you rupture the heart, plug the leak with a bandage
+          <strong>within 3 seconds</strong> and <strong>hold for 5 seconds</strong> to seal it.
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Start overlay -->
+  <div class="overlay" id="startOverlay">
+    <div class="card">
+      <h1>Scrub in 👩‍⚕️👨‍⚕️</h1>
+      <p>Enter your name to begin the case.</p>
+      <div class="field">
+        <input id="playerNameInput" type="text" placeholder="Surgeon name" maxlength="50" autocomplete="name">
+        <button id="beginBtn">Begin</button>
+      </div>
+      <p class="notice">Your results will be saved to the leaderboard after each attempt.</p>
+    </div>
+  </div>
+
+  <!-- Game Over / Success overlay -->
+  <div class="overlay" id="endOverlay" style="display:none">
+    <div class="card">
+      <h1 id="endTitle">Case complete</h1>
+      <div id="endStats"></div>
+      <div class="footer">
+        <a href="leaderboard.html"><button>View Leaderboard</button></a>
+        <button id="playAgainBtn">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile tool tray for small screens -->
+  <div class="mobile-tray" id="mobileTray" role="toolbar" aria-label="Tools">
+    <button class="tray-btn" id="tray-syringe" type="button">
+      <div class="icon">💉</div>
+      <div class="label">Syringe</div>
+      <div class="count" id="traySyr">∞</div>
+    </button>
+    <button class="tray-btn" id="tray-wand" type="button">
+      <div class="icon">🪄</div>
+      <div class="label">Wand</div>
+      <div class="count" id="trayWand">3</div>
+    </button>
+    <button class="tray-btn" id="tray-bandage" type="button">
+      <div class="icon">🩹</div>
+      <div class="label">Bandage</div>
+      <div class="count" id="trayBand">3</div>
+    </button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import { getDatabase, ref, push, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
+    import { firebaseConfig } from "./firebase-config.js";
+
+    // ---------- Firebase ----------
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // ---------- Game State ----------
+    const state = {
+      playerName: "",
+      attempt: 1,
+      started: false,
+      startTime: 0,
+      timerInterval: null,
+      successCount: 0,
+      bandagesLeft: 3,
+      wandsLeft: 3,
+      currentTool: null, // 'syringe' | 'wand' | 'bandage'
+      dragging: false,
+      pendingDrag: null,
+      dragEl: null,
+      spots: [], // {id,xPerc,yPerc,type:'safe'|'danger',revealed:false, injected:false, sealed:false}
+      leak: null, // {spotId, x, y, deadline, timerEl, bloodEl, holdStart:null}
+      bandagesUsed: 0,
+      wandsUsed: 0,
+      totalTimeMs: 0,
+      ended: false
+    };
+
+    const board = document.getElementById('board');
+    const spotsEl = document.getElementById('spots');
+    const toolEls = {
+      syringe: document.getElementById('tool-syringe'),
+      wand: document.getElementById('tool-wand'),
+      bandage: document.getElementById('tool-bandage'),
+      traySyringe: document.getElementById('tray-syringe'),
+      trayWand: document.getElementById('tray-wand'),
+      trayBandage: document.getElementById('tray-bandage')
+    };
+    const counters = {
+      success: document.getElementById('successCount'),
+      bandagesLeft: document.getElementById('bandagesLeft'),
+      wandsLeft: document.getElementById('wandsLeft'),
+      timer: document.getElementById('timer'),
+      playerNameHUD: document.getElementById('playerNameHUD'),
+      wandCount: document.getElementById('wandCount'),
+      bandageCount: document.getElementById('bandageCount'),
+      traySyr: document.getElementById('traySyr'),
+      trayWand: document.getElementById('trayWand'),
+      trayBand: document.getElementById('trayBand')
+    };
+    const resetBtn = document.getElementById('resetBtn');
+    const startOverlay = document.getElementById('startOverlay');
+    const endOverlay = document.getElementById('endOverlay');
+    const beginBtn = document.getElementById('beginBtn');
+    const playAgainBtn = document.getElementById('playAgainBtn');
+    const playerNameInput = document.getElementById('playerNameInput');
+    const endTitle = document.getElementById('endTitle');
+    const endStats = document.getElementById('endStats');
+
+    // ---------- Helpers ----------
+    const fmtTime = (ms)=>{
+      const t = Math.max(0, ms|0);
+      const m = Math.floor(t/60000);
+      const s = Math.floor((t%60000)/1000);
+      const ds = Math.floor((t%1000)/100);
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${ds}`;
+    };
+    const boardRect = ()=> board.getBoundingClientRect();
+    const clientToBoard = (cx, cy)=>{
+      const r = boardRect();
+      return { x: cx - r.left, y: cy - r.top, w:r.width, h:r.height };
+    };
+    const percToPx = (xp, yp)=>{
+      const r = boardRect();
+      return { x: r.width * xp, y: r.height * yp };
+    };
+    const distance = (x1,y1,x2,y2)=> Math.hypot(x1-x2,y1-y2);
+    const pick = (arr,n)=>{
+      const a = arr.slice();
+      for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; }
+      return a.slice(0,n);
+    };
+
+    const saveAttempt = async (reason) => {
+      try {
+        const payload = {
+          name: state.playerName,
+          successfulInjections: state.successCount,
+          bandagesUsed: state.bandagesUsed,
+          wandsUsed: state.wandsUsed,
+          totalTimeMs: state.totalTimeMs,
+          attempt: state.attempt,
+          endedReason: reason,
+          createdAt: serverTimestamp()
+        };
+        await set(push(ref(db, 'results')), payload);
+      } catch (e) {
+        console.error("Failed to save result:", e);
+      }
+    };
+
+    const endGame = async (reason) => {
+      document.body.classList.remove('noscroll');
+      if (state.ended) return;
+      state.ended = true;
+      clearInterval(state.timerInterval);
+      state.totalTimeMs = Date.now() - state.startTime;
+      await saveAttempt(reason);
+      // Show overlay
+      endTitle.textContent = reason === 'win' ? 'Case complete – Success!' : 'Case aborted – Rupture!';
+      endStats.innerHTML = `
+        <div class="panel" style="margin:10px 0">
+          <div><strong>Surgeon:</strong> ${escapeHtml(state.playerName)}</div>
+          <div><strong>Attempt:</strong> ${state.attempt}</div>
+          <div><strong>Successful injections:</strong> ${state.successCount}</div>
+          <div><strong>Bandages used:</strong> ${state.bandagesUsed}</div>
+          <div><strong>Epicardial wands used:</strong> ${state.wandsUsed}</div>
+          <div><strong>Total time:</strong> ${fmtTime(state.totalTimeMs)}</div>
+        </div>
+      `;
+      endOverlay.style.display = 'flex';
+      // Increment attempt counter in localStorage
+      const key = 'heartgame_attempts_' + state.playerName;
+      const prev = Number(localStorage.getItem(key) || '1');
+      localStorage.setItem(key, String(prev + 1));
+    };
+
+    const escapeHtml = (str)=> String(str).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\\\\":"&#92;","'":"&#39;"}[m] || m));
+
+    // ---------- Setup Spots ----------
+    const generateSpots = () => {
+      // 20 pre-defined nicely spaced positions (percentages of board size)
+      const base = [
+        [30,28],[40,23],[50,26],[60,29],[38,35],
+        [48,34],[58,36],[33,44],[43,43],[53,45],
+        [63,46],[36,53],[46,53],[56,54],[30,61],
+        [40,60],[50,62],[60,63],[45,70],[55,71]
+      ].map(([x,y],i)=>({ id: i, xPerc: x/100, yPerc: y/100 }));
+
+      // Randomly choose 5 dangerous among 20
+      const ids = base.map(b=>b.id);
+      const dangerIds = new Set(pick(ids, 5));
+      state.spots = base.map(b => ({
+        id: b.id,
+        xPerc: b.xPerc,
+        yPerc: b.yPerc,
+        type: dangerIds.has(b.id) ? 'danger' : 'safe',
+        revealed: false,
+        injected: false,
+        sealed: false,
+        el: null
+      }));
+
+      // Render
+      spotsEl.innerHTML = '';
+      for(const s of state.spots){
+        const {x,y} = percToPx(s.xPerc, s.yPerc);
+        const el = document.createElement('div');
+        el.className = 'spot';
+        el.style.left = x+'px';
+        el.style.top = y+'px';
+        el.dataset.id = s.id;
+        const mark = document.createElement('div');
+        mark.className = 'mark';
+        mark.textContent = s.type === 'safe' ? 'SAFE' : '!';
+        el.appendChild(mark);
+        s.el = el;
+        spotsEl.appendChild(el);
+      }
+    };
+
+    const setRevealed = (s, on=true)=>{
+      s.revealed = on;
+      s.el.classList.toggle('revealed', on);
+      s.el.classList.toggle('safe', s.type==='safe');
+      s.el.classList.toggle('danger', s.type==='danger');
+    };
+    const setInjected = (s)=>{
+      s.injected = true;
+      s.el.classList.add('injected');
+      s.el.classList.add(s.type);
+      s.el.classList.add('disabled');
+    };
+
+    const updateHUD = ()=>{
+      counters.success.textContent = state.successCount;
+      counters.bandagesLeft.textContent = state.bandagesLeft;
+      counters.wandsLeft.textContent = state.wandsLeft;
+      counters.wandCount.textContent = state.wandsLeft;
+      counters.bandageCount.textContent = state.bandagesLeft;
+      if (counters.trayWand) counters.trayWand.textContent = state.wandsLeft;
+      if (counters.trayBand) counters.trayBand.textContent = state.bandagesLeft;
+      counters.playerNameHUD.textContent = state.playerName || '—';
+    };
+
+    const startTimer = ()=>{
+      const tick = ()=>{
+        const elapsed = Date.now() - state.startTime;
+        counters.timer.textContent = fmtTime(elapsed);
+      };
+      tick();
+      state.timerInterval = setInterval(tick, 100);
+    };
+
+    const resetGame = ()=>{
+      document.body.classList.remove('noscroll');
+      if (state.leak?.bloodEl) state.leak.bloodEl.remove();
+      state.leak = null;
+
+      state.started = false;
+      state.startTime = 0;
+      state.successCount = 0;
+      state.bandagesLeft = 3;
+      state.wandsLeft = 3;
+      state.currentTool = null;
+      state.dragging = false;
+      state.pendingDrag = null;
+      if (state.dragEl) { state.dragEl.remove(); state.dragEl = null; }
+      state.bandagesUsed = 0;
+      state.wandsUsed = 0;
+      state.totalTimeMs = 0;
+      state.ended = false;
+      clearInterval(state.timerInterval);
+      counters.timer.textContent = '00:00.0';
+      updateHUD();
+      generateSpots();
+      setActiveTool(null);
+    };
+
+    const setActiveTool = (tool)=>{
+      state.currentTool = tool;
+      // Clear active classes from side tools
+      ['syringe','wand','bandage'].forEach(k=>{ if (toolEls[k]) toolEls[k].classList.remove('active'); });
+      if (tool && toolEls[tool]) toolEls[tool].classList.add('active');
+      // Sync tray
+      ['traySyringe','trayWand','trayBandage'].forEach(k=>{ if (toolEls[k]) toolEls[k].classList.remove('active'); });
+      if (tool==='syringe' && toolEls.traySyringe) toolEls.traySyringe.classList.add('active');
+      if (tool==='wand' && toolEls.trayWand) toolEls.trayWand.classList.add('active');
+      if (tool==='bandage' && toolEls.trayBandage) toolEls.trayBandage.classList.add('active');
+    };
+
+    const makeGhost = (tool)=>{
+      if (state.dragEl) state.dragEl.remove();
+      const g = document.createElement('div');
+      g.className = 'drag-ghost';
+      g.innerHTML = tool === 'syringe' ? '💉' : tool === 'wand' ? '🪄' : '🩹';
+      g.style.fontSize = '28px';
+      document.body.appendChild(g);
+      state.dragEl = g;
+    };
+
+    const updateGhostPos = (cx, cy)=>{
+      if (!state.dragEl) return;
+      state.dragEl.style.left = cx+'px';
+      state.dragEl.style.top = cy+'px';
+    };
+
+    const toolPointerDown = (tool, ev)=>{
+      ev.preventDefault();
+      if (state.ended) return;
+      if (tool==='wand' && state.wandsLeft<=0) return;
+      if (tool==='bandage' && state.bandagesLeft<=0) return;
+      setActiveTool(tool);
+      document.body.classList.add('noscroll');
+      state.pendingDrag = { tool, sx: (ev.clientX || (ev.touches?.[0]?.clientX) || 0), sy: (ev.clientY || (ev.touches?.[0]?.clientY) || 0) };
+    };
+
+    const pointerMove = (ev)=>{
+      const cx = ev.clientX ?? (ev.touches?.[0]?.clientX) ?? 0;
+      const cy = ev.clientY ?? (ev.touches?.[0]?.clientY) ?? 0;
+
+      // If user moved enough after pressing a tool, start actual drag
+      if (state.pendingDrag && !state.dragging) {
+        const dx = cx - state.pendingDrag.sx; const dy = cy - state.pendingDrag.sy;
+        if (Math.hypot(dx,dy) > 6) {
+          state.dragging = true;
+          makeGhost(state.pendingDrag.tool);
+        }
+      }
+      if (!state.dragging) return;
+      updateGhostPos(cx, cy);
+
+      // If bandaging and a leak exists, we allow "hold while over leak"
+      if (state.currentTool === 'bandage' && state.leak){
+        const b = clientToBoard(cx, cy);
+        const leak = state.leak;
+        const R = 40; // hit radius px
+        if (distance(b.x, b.y, leak.x, leak.y) <= R){
+          maybeStartBandageHold();
+        } else {
+          cancelBandageHold();
+        }
+      }
+    };
+
+    const pointerUp = (ev)=>{
+      const hadPending = !!state.pendingDrag;
+      const hadDragging = !!state.dragging;
+      state.pendingDrag = null;
+      if (!hadDragging){
+        // Simple tap on tool: only selection, no drop action
+        return;
+      }
+      const cx = ev.clientX ?? (ev.changedTouches?.[0]?.clientX) ?? 0;
+      const cy = ev.clientY ?? (ev.changedTouches?.[0]?.clientY) ?? 0;
+      const b = clientToBoard(cx, cy);
+
+      // Find nearest spot within radius
+      const R = 28; // px radius to drop onto a spot
+      const target = state.spots.find(s=>{
+        const p = percToPx(s.xPerc, s.yPerc);
+        return distance(b.x,b.y,p.x,p.y) <= R;
+      });
+
+      if (state.currentTool === 'syringe'){
+        if (target && !target.injected){
+          injectAt(target);
+        }
+      } else if (state.currentTool === 'wand'){
+        if (target && !target.injected && !target.revealed && state.wandsLeft>0){
+          state.wandsLeft -= 1;
+          state.wandsUsed += 1;
+          setRevealed(target, true);
+          updateHUD();
+        }
+      } else if (state.currentTool === 'bandage'){
+        cancelBandageHold();
+      }
+
+      // end drag
+      state.dragging = false;
+      document.body.classList.remove('noscroll');
+      if (state.dragEl){ state.dragEl.remove(); state.dragEl = null; }
+    };
+
+    // Tap-to-use: allow applying selected tool without dragging
+    spotsEl.addEventListener('click', (ev)=>{
+      if (state.dragging) return; // ignore clicks after drag
+      const targetEl = ev.target.closest('.spot');
+      if (!targetEl) return;
+      const id = Number(targetEl.dataset.id);
+      const spot = state.spots.find(s=>s.id===id);
+      if (!spot) return;
+      if (state.currentTool === 'syringe'){
+        if (!spot.injected) injectAt(spot);
+      } else if (state.currentTool === 'wand'){
+        if (!spot.injected && !spot.revealed && state.wandsLeft>0){
+          state.wandsLeft -= 1;
+          state.wandsUsed += 1;
+          setRevealed(spot, true);
+          updateHUD();
+        }
+      }
+    });
+
+    // Bandage assist: if bandage is selected, pressing near the leak starts the hold (no need to drag)
+    board.addEventListener('pointerdown', (ev)=>{
+      document.body.classList.add('noscroll');
+      if (state.ended) return;
+      if (state.currentTool !== 'bandage') return;
+      const cx = ev.clientX ?? (ev.touches?.[0]?.clientX) ?? 0;
+      const cy = ev.clientY ?? (ev.touches?.[0]?.clientY) ?? 0;
+      const b = clientToBoard(cx, cy);
+      if (!state.leak) return;
+      const R = 40;
+      if (Math.hypot(b.x - state.leak.x, b.y - state.leak.y) <= R){
+        maybeStartBandageHold();
+      }
+    });
+    board.addEventListener('pointerup', (ev)=>{
+      document.body.classList.remove('noscroll');
+      if (state.currentTool === 'bandage') cancelBandageHold();
+    });
+
+    // ---------- Injection & Leak ----------
+    const injectAt = (spot)=>{
+      setInjected(spot);
+      if (spot.type === 'safe'){
+        state.successCount += 1;
+        updateHUD();
+        if (state.successCount >= 8){
+          endGame('win');
+        }
+      } else {
+        // Dangerous -> start leak
+        triggerLeak(spot);
+      }
+    };
+
+    const triggerLeak = (spot)=>{
+      if (state.leak) return; // only one at a time
+      const p = percToPx(spot.xPerc, spot.yPerc);
+      const blood = document.createElement('div');
+      blood.className = 'blood';
+      blood.style.left = p.x+'px';
+      blood.style.top = p.y+'px';
+      const spray = document.createElement('div');
+      spray.className = 'spray';
+      blood.appendChild(spray);
+
+      const timerEl = document.createElement('div');
+      timerEl.className = 'leak-timer';
+      blood.appendChild(timerEl);
+
+      const holdEl = document.createElement('div');
+      holdEl.className = 'hold-progress';
+      holdEl.style.display = 'none';
+      blood.appendChild(holdEl);
+
+      board.appendChild(blood);
+
+      const deadline = Date.now() + 3000; // 3s to start bandage
+      state.leak = { spotId: spot.id, x: p.x, y: p.y, deadline, bloodEl: blood, timerEl, holdEl, holding:false, holdStart: null };
+
+      const tick = ()=>{
+        if (!state.leak) return;
+        const now = Date.now();
+        if (!state.leak.holding){
+          const remain = Math.max(0, deadline - now);
+          timerEl.textContent = `Plug leak in ${ (remain/1000).toFixed(1) }s`;
+          if (remain <= 0){
+            // Out of time
+            endGame('lose');
+          }
+        } else {
+          // During hold, show progress (5s)
+          const elapsed = now - state.leak.holdStart;
+          const remainHold = Math.max(0, 5000 - elapsed);
+          state.leak.holdEl.textContent = `Hold ${ (remainHold/1000).toFixed(1) }s`;
+          if (elapsed >= 5000){
+            sealLeak();
+          }
+        }
+        if (!state.ended) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+
+    const maybeStartBandageHold = ()=>{
+      if (!state.leak) return;
+      if (state.bandagesLeft <= 0) return;
+      if (state.leak.holding) return;
+      const now = Date.now();
+      if (now > state.leak.deadline) return; // too late
+
+      // Start hold
+      state.leak.holding = true;
+      state.leak.holdStart = now;
+      state.leak.holdEl.style.display = 'block';
+      state.leak.timerEl.style.display = 'none';
+      // Consume a bandage upon starting the hold
+      state.bandagesLeft -= 1;
+      state.bandagesUsed += 1;
+      updateHUD();
+    };
+
+    const cancelBandageHold = ()=>{
+      if (!state.leak) return;
+      if (!state.leak.holding) return;
+      // Cancel the hold (e.g., pointer moved away or pointerup)
+      state.leak.holding = false;
+      state.leak.holdStart = null;
+      state.leak.holdEl.style.display = 'none';
+      state.leak.timerEl.style.display = 'block';
+    };
+
+    const sealLeak = ()=>{
+      if (!state.leak) return;
+      // Mark the leaking spot as sealed (already injected (danger) so disabled)
+      const spot = state.spots.find(s=>s.id===state.leak.spotId);
+      if (spot) {
+        spot.sealed = true;
+        spot.el.classList.add('disabled');
+        spot.el.style.outlineColor = '#60a5fa';
+      }
+      state.leak.bloodEl.remove();
+      state.leak = null;
+    };
+
+    // ---------- Start / Restart ----------
+    const beginGame = ()=>{
+      const name = playerNameInput.value.trim().slice(0,50);
+      if (!name){ alert("Please enter your name."); return; }
+      state.playerName = name;
+      // Load attempt count for this name
+      const key = 'heartgame_attempts_' + state.playerName;
+      const prev = Number(localStorage.getItem(key) || '1');
+      state.attempt = prev;
+      localStorage.setItem(key, String(prev)); // keep value until endGame increments
+
+      counters.playerNameHUD.textContent = state.playerName;
+      startOverlay.style.display = 'none';
+      state.started = true;
+      state.startTime = Date.now();
+      startTimer();
+    };
+
+    const restart = ()=>{
+      if (!confirm("Restart the current case? Progress will be lost.")) return;
+      resetGame();
+      startOverlay.style.display = 'flex';
+    };
+
+    // ---------- Events ----------
+    // Side tools
+    if (toolEls.syringe) toolEls.syringe.addEventListener('pointerdown', e=>toolPointerDown('syringe', e));
+    if (toolEls.wand) toolEls.wand.addEventListener('pointerdown', e=>toolPointerDown('wand', e));
+    if (toolEls.bandage) toolEls.bandage.addEventListener('pointerdown', e=>toolPointerDown('bandage', e));
+    // Mobile tray (tap selects; drag works too)
+    if (toolEls.traySyringe) toolEls.traySyringe.addEventListener('pointerdown', e=>toolPointerDown('syringe', e));
+    if (toolEls.trayWand) toolEls.trayWand.addEventListener('pointerdown', e=>toolPointerDown('wand', e));
+    if (toolEls.trayBandage) toolEls.trayBandage.addEventListener('pointerdown', e=>toolPointerDown('bandage', e));
+
+    window.addEventListener('pointermove', pointerMove, {passive:false});
+    window.addEventListener('pointerup', pointerUp, {passive:false});
+    window.addEventListener('touchmove', pointerMove, {passive:false});
+    window.addEventListener('touchend', pointerUp, {passive:false});
+
+    beginBtn.addEventListener('click', beginGame);
+    resetBtn.addEventListener('click', restart);
+    playAgainBtn.addEventListener('click', ()=>{
+      endOverlay.style.display = 'none';
+      resetGame();
+      // Keep the same player and increment attempt
+      const key = 'heartgame_attempts_' + state.playerName;
+      const nextAttempt = Number(localStorage.getItem(key) || '1');
+      state.attempt = nextAttempt;
+      startOverlay.style.display = 'none';
+      state.started = true;
+      state.startTime = Date.now();
+      startTimer();
+      updateHUD();
+    });
+
+    // Prefill name from last session if available (global)
+    const lastName = localStorage.getItem('heartgame_last_name') || "";
+    if (lastName) playerNameInput.value = lastName;
+    playerNameInput.addEventListener('change', ()=>{
+      localStorage.setItem('heartgame_last_name', playerNameInput.value.trim());
+    });
+
+    // Init
+    resetGame();
+
+  </script>
+</body>
+</html>
