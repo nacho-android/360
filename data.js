@@ -909,6 +909,76 @@ var APP_DATA = {
       },
       "linkHotspots": [],
       "infoHotspots": []
+    },
+    {
+      "id": "26-BS_749__PSGFH_q95_31DEC2025",
+      "name": "Bannockburn Sluicings, Otago, New Zealand",
+      "levels": [
+        {
+          "tileSize": 256,
+          "size": 256,
+          "fallbackOnly": true
+        },
+        {
+          "tileSize": 512,
+          "size": 512
+        },
+        {
+          "tileSize": 512,
+          "size": 1024
+        },
+        {
+          "tileSize": 512,
+          "size": 2048
+        },
+        {
+          "tileSize": 512,
+          "size": 4096
+        }
+      ],
+      "faceSize": 4096,
+      "initialViewParameters": {
+        "yaw": 0,
+        "pitch": 0.45,
+        "fov": 1.3
+      },
+      "linkHotspots": [],
+      "infoHotspots": []
+    },
+    {
+      "id": "27-BS_750__PSGFH_q95_31DEC2025",
+      "name": "Bannockburn Sluicings, Otago, New Zealand",
+      "levels": [
+        {
+          "tileSize": 256,
+          "size": 256,
+          "fallbackOnly": true
+        },
+        {
+          "tileSize": 512,
+          "size": 512
+        },
+        {
+          "tileSize": 512,
+          "size": 1024
+        },
+        {
+          "tileSize": 512,
+          "size": 2048
+        },
+        {
+          "tileSize": 512,
+          "size": 4096
+        }
+      ],
+      "faceSize": 4096,
+      "initialViewParameters": {
+        "yaw": 0,
+        "pitch": 0.2,
+        "fov": 1.3
+      },
+      "linkHotspots": [],
+      "infoHotspots": []
     }
   ],
   "name": "360 Worlds",
