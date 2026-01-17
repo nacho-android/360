@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panorama Web Tiler</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Panorama Web Tiler</h1>
+      <p>Generate Marzipano-style tiles, preview, and data.js directly in your browser.</p>
+    </header>
+
+    <section class="card">
+      <form id="tiler-form">
+        <div class="field">
+          <label for="panorama">Equirectangular image</label>
+          <input id="panorama" name="panorama" type="file" accept="image/*" required>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label for="scene-id">Scene ID</label>
+            <input id="scene-id" name="scene-id" type="text" placeholder="unique-scene-id">
+          </div>
+          <div class="field">
+            <label for="scene-name">Scene Name</label>
+            <input id="scene-name" name="scene-name" type="text" placeholder="Display name">
+          </div>
+          <div class="field">
+            <label for="tour-name">Tour Name</label>
+            <input id="tour-name" name="tour-name" type="text" placeholder="Defaults to Generated tour">
+          </div>
+          <div class="field">
+            <label for="tile-size">Tile Size</label>
+            <input id="tile-size" name="tile-size" type="number" value="512" min="256" step="1">
+          </div>
+          <div class="field">
+            <label for="tile-quality">Tile JPEG quality (0-1)</label>
+            <input id="tile-quality" name="tile-quality" type="number" value="0.85" min="0.1" max="1" step="0.05">
+          </div>
+        </div>
+
+        <fieldset class="field">
+          <legend>Initial View Parameters</legend>
+          <div class="grid">
+            <div class="field">
+              <label for="yaw">Yaw (radians)</label>
+              <input id="yaw" name="yaw" type="number" value="0" step="0.01">
+            </div>
+            <div class="field">
+              <label for="pitch">Pitch (radians)</label>
+              <input id="pitch" name="pitch" type="number" value="0" step="0.01">
+            </div>
+            <div class="field">
+              <label for="fov">FOV (radians)</label>
+              <input id="fov" name="fov" type="number" value="1.3" step="0.01">
+            </div>
+          </div>
+        </fieldset>
+
+        <button type="submit">Generate tiles &amp; data.js</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Progress</h2>
+      <textarea id="log" readonly></textarea>
+      <div class="actions">
+        <a id="download-tiles" class="hidden" download>Download tiles (zip)</a>
+        <a id="download-data" class="hidden" download>Download data.js</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>data.js output</h2>
+      <textarea id="datajs-output" readonly placeholder="Generated data.js will appear here after processing..."></textarea>
+    </section>
+
+    <details class="card">
+      <summary>About / Readme</summary>
+      <div class="about-content">
+        <p><strong>Version:</strong> <span id="version"></span></p>
+        <p>This browser tool converts an equirectangular panorama into Marzipano-style cube face tiles plus a matching <code>data.js</code>.</p>
+        <h3>Output layout</h3>
+<pre><code>data.js
+&lt;scene-id&gt;/
+  preview.jpg
+  1/   &lt;-- smallest tiled level (tileSize x tileSize)
+    f/0/0.jpg ...
+  2/
+    f/0/0.jpg ...
+  ...
+  N/   &lt;-- top level, 1:1 to source-derived cube face
+    f/0/0.jpg ...</code></pre>
+        <p>Levels are generated from your chosen tile size up to a 1:1 cube face derived from the source width (width ÷ 4), ensuring the deepest level is not downsampled.</p>
+      </div>
+    </details>
+  </main>
+
+  <script src="jszip.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
