@@ -1,0 +1,2422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dose Calculator</title>
+<style>
+  /* Theme */
+  :root{
+    --bg:#fafafa;
+    --panel:#ffffff;
+    --ink:#1f2937;
+    --muted:#6b7280;
+    --line:#e5e7eb;
+    --accent:#e0f2fe;  /* estimated weight highlight */
+    --actual:#f0fdf4;  /* actual weight column */
+    --chip:#eef2ff;
+    --good:#10b981;
+    --warn:#f59e0b;
+    --bad:#ef4444;
+  }
+
+  html, body{ height:100%; }
+  body{
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    background: var(--bg);
+    color: var(--ink);
+    margin: 0;
+    line-height: 1.35;
+  }
+
+  /* Header */
+  header{
+    position: static;
+    background: linear-gradient(#ffffff, #fafafa);
+    border-bottom: 1px solid var(--line);
+  }
+  .wrap{ max-width: 1200px; margin: 0 auto; padding: 10px 12px 18px; }
+  h1{ margin: 8px 0 4px; font-size: 1.55rem; }
+  .sub{ color: var(--muted); font-size: .95rem; }
+
+  /* Controls panel */
+  .controls{
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    padding: 10px;
+    margin: 10px 0 8px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+
+  /* Each control: [label | control] */
+  .control{
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 6px;
+  }
+  .control > label{
+    grid-column: 1;
+    font-weight: 600;
+    white-space: nowrap;
+    margin: 0;
+  }
+  .control > .row,
+  .control > select,
+  .control > input{
+    grid-column: 2;
+    justify-self: start;
+  }
+  .control > .foot{
+    grid-column: 1 / -1;
+    color: var(--muted);
+    font-size: .85rem;
+  }
+
+  /* Row groups */
+  .row{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    width: max-content;
+  }
+
+  /* Inputs / selects */
+  .control input,
+  .control select{
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+  #estWeightSelect{ width: auto; min-width: 8ch; }
+  #actWeight{
+    width: 8ch;
+    text-align: center;
+    line-height: 1.2;
+  }
+  #applyActual{ white-space: nowrap; }
+
+  /* Buttons */
+  .btn{
+    appearance: none;
+    border: 1px solid var(--line);
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .btn:active{ transform: translateY(1px); }
+  .btn.primary{ background:#eef2ff; }
+  .btn.good{ background:#ecfdf5; border-color:#d1fae5; }
+  .btn.warn{ background:#fffbeb; border-color:#fef3c7; }
+  .btn.bad{ background:#fef2f2; border-color:#fee2e2; }
+  .btn.subtle{ background:#fff; font-weight:600; padding: 6px 10px; }
+  .btn.small{ padding: 6px 10px; font-size: .9rem; }
+
+  .link-button{
+    color: var(--ink);
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .trolley-panel{
+    display: grid;
+    gap: 6px;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--line);
+  }
+  .trolley-panel .row label{
+    font-size: .9rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  /* Collapsible sections */
+  details{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    margin: 12px 0;
+    overflow: hidden;
+  }
+  summary{
+    cursor: pointer;
+    list-style: none;
+    padding: 12px 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  summary::-webkit-details-marker{ display:none; }
+  summary .meta{ font-weight: 500; color: var(--muted); font-size: .95rem; }
+  .summary-left{ display:flex; align-items:center; gap: 8px; }
+  .summary-right{ display:flex; align-items:center; gap: 8px; }
+  .drag-handle{
+    cursor: grab;
+    border: 1px solid var(--line);
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: #f8fafc;
+    font-weight: 600;
+    font-size: .85rem;
+  }
+  .dragging{ opacity: .6; }
+  .drag-over{ outline: 2px dashed var(--accent); }
+
+  /* Tables */
+  .table-wrap{
+    padding: 0 0 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-beavior-x: contain;
+  }
+  table.sop{
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: max-content;
+    min-width: 100%;
+  }
+  table.sop th,
+  table.sop td{
+    border: 1px solid var(--line);
+    padding: 7px 7px;
+    vertical-align: middle;
+  }
+  table.sop th{
+    background: #f5f7fa;
+    text-align: center;
+    font-weight: 700;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    white-space: nowrap;
+  }
+  table.sop td{
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  table.sop td:not(:first-child){ text-align: center; }
+  table.sop th:first-child{ text-align: left; }
+  table.sop td:first-child,
+  table.sop th:first-child{
+    position: sticky;
+    left: 0;
+    background: #f9fafb;
+    text-align: left;
+    z-index: 2;
+    width: 155px;
+    min-width: 155px;
+    white-space: normal;
+  }
+  .drug-note{ display: block; color: var(--muted); font-size: .86rem; font-weight: 500; }
+
+  /* Column highlights */
+  .col-highlight{ background: var(--accent); }
+  .actual-col{ background: var(--actual); }
+
+  .note{ color: var(--muted); font-size: .9rem; padding: 6px 2px 0; }
+
+  /* Custom editor */
+  .custom-cell{ position: relative; }
+  .custom-editor{
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+    gap: 6px;
+    align-items: start;
+  }
+  .custom-editor .name{ grid-column: 1; width: 18ch; }
+  .custom-editor .field{ grid-column: 1; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .custom-editor .field input{ width: 9ch; text-align: right; }
+  .custom-editor input,
+  .custom-editor select{
+    padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: .95rem;
+  }
+  .custom-editor label{ color: var(--muted); font-size: .9rem; font-weight: 600; }
+  .custom-del{
+    position: absolute; left: 6px; bottom: 6px; width: 22px; height: 22px; line-height: 20px;
+    text-align: center; border-radius: 6px; border: 1px solid var(--line); background: #fff; cursor: pointer; font-weight: 700; color: #6b7280; padding: 0;
+  }
+  .custom-del:active{ transform: translateY(1px); }
+
+  /* Notes */
+  .notes-text{
+    width: 100%; min-height: 64px; max-height: 240px; resize: vertical;
+    padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: .95rem; line-height: 1.3;
+  }
+  .note-row{ position: relative; }
+  .note-del{
+    position: absolute; left: 6px; bottom: 6px; width: 22px; height: 22px; line-height: 20px;
+    text-align: center; border-radius: 6px; border: 1px solid var(--line); background: #fff; cursor: pointer; font-weight: 700; color: #6b7280; padding: 0;
+  }
+  .note-del:active{ transform: translateY(1px); }
+
+  /* Sync table */
+  .sync-field{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .sync-field input[type="text"],
+  .sync-field input[type="password"],
+  .sync-field input[type="number"],
+  .sync-field input[type="email"],
+  .sync-field textarea,
+  .sync-field select{
+    padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: .95rem; min-width: 18ch;
+  }
+  .status{ font-size: .92rem; padding: 6px 0 0; }
+  .status.ok{ color: var(--good); }
+  .status.warn{ color: var(--warn); }
+  .status.err{ color: var(--bad); }
+
+  .pill{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--chip);
+    color: #3730a3;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 700;
+  }
+
+  .edit-panel{
+    padding: 10px 12px 14px;
+    border-top: 1px dashed var(--line);
+    background: #f9fafb;
+  }
+  .edit-grid{
+    display: grid;
+    grid-template-columns: max-content minmax(180px, 1fr);
+    gap: 8px 12px;
+    align-items: center;
+  }
+  .edit-grid input,
+  .edit-grid select,
+  .edit-grid textarea{
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: .95rem;
+  }
+  .edit-grid textarea{ min-height: 72px; }
+  .edit-row{
+    display: grid;
+    grid-template-columns: repeat(6, minmax(100px, 1fr)) auto;
+    gap: 8px;
+    align-items: center;
+  }
+  .edit-row .btn{ justify-self: start; }
+  .edit-subtitle{ font-weight: 600; margin: 10px 0 6px; }
+
+  .welcome{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 12px 0;
+  }
+  .welcome h2{ margin: 0 0 6px; font-size: 1.2rem; }
+  .welcome ul{ margin: 6px 0 0 18px; color: var(--muted); }
+
+  /* Responsive tweaks */
+  @media (max-width: 640px){
+    .wrap{ padding: 8px 8px; }
+    h1{ font-size: 1.3rem; }
+    .controls{ gap: 8px; padding: 8px; border-radius: 10px; }
+    details{ margin: 10px 0; border-radius: 10px; }
+    table.sop th, table.sop td{ padding: 2px 2px; font-size: .95rem; }
+    table.sop td:first-child, table.sop th:first-child{ width: 155px; min-width: 155px; }
+    .custom-editor .name{ width: 14ch; }
+    .edit-row{ grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Dose Calculator</h1>
+    <div class="controls">
+      <div class="control" id="speciesControl">
+        <label for="speciesSelect">Species</label>
+        <select id="speciesSelect" aria-label="Species"></select>
+        <div class="foot"></div>
+      </div>
+
+      <div class="control" id="pageControl" hidden>
+        <label for="pageSelect">Page</label>
+        <select id="pageSelect" aria-label="Page"></select>
+        <div class="foot"></div>
+      </div>
+
+      <div class="control">
+        <label for="estWeightSelect">Estimated weight</label>
+        <select id="estWeightSelect" aria-label="Estimated weight"></select>
+        <div class="foot"></div>
+      </div>
+
+      <div class="control">
+        <label for="actWeight">
+          <span id="toggleTrolley" class="link-button" role="button" tabindex="0">Actual pig weight</span>
+        </label>
+        <div class="row">
+          <input id="actWeight" type="text" inputmode="decimal"
+                 pattern="[0-9]*[.,]?[0-9]*" value="30.0" placeholder="e.g. 27.4" />
+          <button id="applyActual" class="btn primary">Update</button>
+        </div>
+        <div class="trolley-panel" id="trolleyPanel" hidden>
+          <div class="row">
+            <label for="trolleyWeight">Trolley weight</label>
+            <input id="trolleyWeight" type="text" inputmode="decimal" placeholder="e.g. 18.2" />
+          </div>
+          <div class="row">
+            <label for="trolleyPlusWeight">Trolley + animal weight</label>
+            <input id="trolleyPlusWeight" type="text" inputmode="decimal" placeholder="e.g. 45.8" />
+          </div>
+          <div class="row">
+            <button id="calcTrolley" class="btn good">Calculate</button>
+            <button id="clearTrolley" class="btn warn">Clear</button>
+          </div>
+        </div>
+        <div class="foot"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="app"></main>
+
+<script type="module">
+  const DEFAULT_DATA_URL = './default-data.json';
+  const weights = Array.from({length: ((100-20)/5)+1}, (_,i)=>20 + i*5);
+  const CLIENT_ID = 'c-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+  const storage = {
+    get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+    set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} },
+    remove(k){ try{ localStorage.removeItem(k); }catch(e){} }
+  };
+
+  const KEYS = {
+    teamData: 'dosecalc_teamData_v1',
+    personalData: 'dosecalc_personalData_v1',
+    ui: 'dosecalc_ui_v1',
+    teamId: 'dosecalc_teamId_v1',
+    personalId: 'dosecalc_personalId_v1',
+    ownerHash: 'dosecalc_ownerHash_v1'
+  };
+
+  const state = {
+    defaults: null,
+    teamData: null,
+    personalData: null,
+    ui: {
+      estimatedWeight: 20,
+      actualWeight: 30.0,
+      speciesId: null,
+      pageId: null,
+      teamId: '',
+      personalId: '',
+      ownerAuthorized: false,
+      rememberOwner: false,
+      editMode: false,
+      showTrolleyCalc: false,
+      trolleyWeight: '',
+      trolleyPlusWeight: ''
+    },
+    sync: {
+      firebaseAvailable: false,
+      teamStatus: 'Not connected.',
+      personalStatus: 'Personal sync is off.',
+      teamRef: null,
+      teamCallback: null,
+      personalRef: null,
+      personalCallback: null,
+      lastTeamAt: 0,
+      lastPersonalAt: 0,
+      pushTimer: null,
+      personalPushTimer: null
+    }
+  };
+
+  let firebaseApi = null;
+  let tablesReady = false;
+  let weightTables = [];
+  let renderScheduled = false;
+
+  const app = document.getElementById('app');
+  const speciesSelect = document.getElementById('speciesSelect');
+  const pageSelect = document.getElementById('pageSelect');
+  const estSelect = document.getElementById('estWeightSelect');
+  const actInput = document.getElementById('actWeight');
+  const applyBtn = document.getElementById('applyActual');
+  const toggleTrolley = document.getElementById('toggleTrolley');
+  const trolleyPanel = document.getElementById('trolleyPanel');
+  const trolleyWeight = document.getElementById('trolleyWeight');
+  const trolleyPlusWeight = document.getElementById('trolleyPlusWeight');
+  const calcTrolley = document.getElementById('calcTrolley');
+  const clearTrolley = document.getElementById('clearTrolley');
+
+  function loadJson(key, fallback){
+    try{
+      const raw = storage.get(key);
+      return raw ? JSON.parse(raw) : fallback;
+    }catch(e){
+      return fallback;
+    }
+  }
+
+  function saveJson(key, value){
+    storage.set(key, JSON.stringify(value));
+  }
+
+  function clampToStep(num, min, max, step){
+    const n = Math.round((Number(num)-min)/step)*step + min; return Math.max(min, Math.min(max, n));
+  }
+
+  function safeNumber(val){
+    if(val === null || val === undefined) return null;
+    const str = String(val).trim();
+    if(str === '') return null;
+    const n = Number(str.replace(',', '.'));
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function roundValue(value, dp, mode){
+    const factor = Math.pow(10, dp);
+    if(mode === 'down') return Math.floor(value * factor) / factor;
+    if(mode === 'up') return Math.ceil(value * factor) / factor;
+    return Math.round(value * factor) / factor;
+  }
+
+  function formatDose(value, dp, mode){
+    if(!Number.isFinite(value)) return '—';
+    const rounded = roundValue(value, dp, mode || 'round');
+    return rounded.toFixed(dp);
+  }
+
+  function volFor(weightKg, rule){
+    const {amt, unit, conc, concUnit} = rule;
+    if(unit === 'ml_per_kg'){ return amt * weightKg; }
+    let dosePerKg_mg = 0;
+    if(unit === 'mg_per_kg' || unit === 'mg_per_kg_per_h') dosePerKg_mg = amt;
+    if(unit === 'ug_per_kg' || unit === 'ug_per_kg_per_h') dosePerKg_mg = amt/1000;
+    const dose_mg = dosePerKg_mg * weightKg;
+    const conc_mg_per_ml = (concUnit === 'mg_per_ml') ? conc : (conc/1000);
+    return dose_mg / conc_mg_per_ml;
+  }
+
+  function newId(prefix='r'){
+    return `${prefix}-${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+  }
+
+  function getActiveSpecies(){
+    if(!state.teamData?.species?.length) return null;
+    const id = state.ui.speciesId || state.teamData.species[0].id;
+    return state.teamData.species.find(s => s.id === id) || state.teamData.species[0];
+  }
+
+  function getActivePage(){
+    const species = getActiveSpecies();
+    if(!species?.pages?.length) return null;
+    const id = state.ui.pageId || species.pages[0].id;
+    return species.pages.find(p => p.id === id) || species.pages[0];
+  }
+
+  function shouldShowWelcome(){
+    const hasTeamData = !!(state.teamData && state.teamData.species && state.teamData.species.length);
+    return !hasTeamData && !state.ui.teamId && !getTeamParam();
+  }
+
+  function getTeamParam(){
+    return new URLSearchParams(window.location.search).get('team');
+  }
+
+  function scheduleRender(){
+    if(renderScheduled) return;
+    renderScheduled = true;
+    requestAnimationFrame(()=>{
+      renderScheduled = false;
+      renderApp();
+    });
+  }
+
+  function saveUiState(){
+    saveJson(KEYS.ui, {
+      estimatedWeight: state.ui.estimatedWeight,
+      actualWeight: state.ui.actualWeight,
+      speciesId: state.ui.speciesId,
+      pageId: state.ui.pageId,
+      showTrolleyCalc: state.ui.showTrolleyCalc,
+      trolleyWeight: state.ui.trolleyWeight,
+      trolleyPlusWeight: state.ui.trolleyPlusWeight,
+      rememberOwner: state.ui.rememberOwner
+    });
+  }
+
+  function saveTeamData(){
+    if(state.teamData){
+      saveJson(KEYS.teamData, state.teamData);
+      scheduleTeamPush();
+    }
+  }
+
+  function savePersonalData(){
+    if(state.personalData){
+      saveJson(KEYS.personalData, state.personalData);
+      schedulePersonalPush();
+    }
+  }
+
+  function setTeamData(data, {saveLocal=true} = {}){
+    state.teamData = data;
+    if(saveLocal) saveTeamData();
+    scheduleRender();
+  }
+
+  function setPersonalData(data){
+    state.personalData = data;
+    savePersonalData();
+    scheduleRender();
+  }
+
+  async function loadDefaults(){
+    try{
+      const res = await fetch(DEFAULT_DATA_URL, {cache:'no-store'});
+      if(!res.ok) throw new Error('Failed to load defaults');
+      return await res.json();
+    }catch(err){
+      console.warn(err);
+      return null;
+    }
+  }
+
+  async function hashPassword(text){
+    if(!text) return '';
+    const data = new TextEncoder().encode(text);
+    const hashBuf = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  async function initFirebase(){
+    return Promise.all([
+      import('https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js')
+    ]).then(([appMod, dbMod])=>{
+      const { initializeApp } = appMod;
+      const { getDatabase, ref, get, set, onValue, off } = dbMod;
+      const firebaseConfig = {
+        apiKey: "AIzaSyAI31CvR3dNW_jzl1-A_bOG_ClA8TABdu8",
+        authDomain: "drug-calc-dc52c.firebaseapp.com",
+        databaseURL: "https://drug-calc-dc52c-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "drug-calc-dc52c",
+        storageBucket: "drug-calc-dc52c.firebasestorage.app",
+        messagingSenderId: "301558271217",
+        appId: "1:301558271217:web:ecb1b726c9c9254d13ed50",
+        measurementId: "G-KFR5KK1276"
+      };
+      const fbApp = initializeApp(firebaseConfig);
+      const db = getDatabase(fbApp);
+      firebaseApi = { ref, get, set, onValue, off, db };
+      state.sync.firebaseAvailable = true;
+      scheduleRender();
+    }).catch(()=>{
+      state.sync.firebaseAvailable = false;
+      state.sync.teamStatus = 'Firebase unavailable; running locally.';
+      state.sync.personalStatus = 'Firebase unavailable; personal sync disabled.';
+      scheduleRender();
+    });
+  }
+
+  function sanitizeId(id){
+    return String(id||'').trim().replace(/[.#$\[\]]/g,'-');
+  }
+
+  function teamPath(id){
+    return `dosecalc/v2/team/${id}`;
+  }
+
+  function personalPath(teamId, personalId){
+    return `dosecalc/v2/personal/${teamId}/${personalId}`;
+  }
+
+  async function startTeamSync(teamId){
+    if(!firebaseApi || !state.sync.firebaseAvailable) return;
+    const { ref, get, set, onValue, off, db } = firebaseApi;
+    if(state.sync.teamRef && state.sync.teamCallback){
+      off(state.sync.teamRef, 'value', state.sync.teamCallback);
+    }
+    const path = teamPath(teamId);
+    state.sync.teamRef = ref(db, path);
+    state.sync.teamStatus = 'Connecting…';
+
+    const snap = await get(state.sync.teamRef);
+    if(snap.exists()){
+      const remote = snap.val();
+      applyTeamPayload(remote, {source:'remote'});
+      state.sync.teamStatus = `Connected to team ${teamId}.`;
+    }else{
+      if(state.teamData){
+        await set(state.sync.teamRef, buildTeamPayload());
+        state.sync.teamStatus = `Created new team data for ${teamId}.`;
+      }else{
+        state.sync.teamStatus = `Team ${teamId} is empty. Load defaults or import backup.`;
+      }
+    }
+
+    state.sync.teamCallback = (snapShot)=>{
+      const payload = snapShot.val();
+      if(!payload) return;
+      if(payload.clientId && payload.clientId === CLIENT_ID) return;
+      applyTeamPayload(payload, {source:'listener'});
+    };
+    onValue(state.sync.teamRef, state.sync.teamCallback);
+    scheduleRender();
+  }
+
+  function applyTeamPayload(payload, {source}){
+    if(!payload?.data) return;
+    const updatedAt = Date.parse(payload.updatedAt || 0);
+    if(updatedAt && updatedAt <= state.sync.lastTeamAt) return;
+    state.sync.lastTeamAt = updatedAt || Date.now();
+    state.teamData = payload.data;
+    saveJson(KEYS.teamData, state.teamData);
+    if(payload.data.ownerPasswordHash){
+      const savedHash = storage.get(KEYS.ownerHash);
+      state.ui.ownerAuthorized = !!(savedHash && payload.data.ownerPasswordHash === savedHash);
+    }else{
+      state.ui.ownerAuthorized = false;
+    }
+    state.sync.teamStatus = source === 'remote' ? 'Team data loaded.' : 'Team data updated.';
+    scheduleRender();
+  }
+
+  function buildTeamPayload(){
+    return {
+      version: 1,
+      updatedAt: new Date().toISOString(),
+      clientId: CLIENT_ID,
+      data: state.teamData
+    };
+  }
+
+  function scheduleTeamPush(){
+    if(!firebaseApi || !state.sync.firebaseAvailable) return;
+    if(!state.ui.teamId || !state.sync.teamRef) return;
+    if(!state.ui.ownerAuthorized) return;
+    if(state.sync.pushTimer) clearTimeout(state.sync.pushTimer);
+    state.sync.pushTimer = setTimeout(async ()=>{
+      try{
+        await firebaseApi.set(state.sync.teamRef, buildTeamPayload());
+        state.sync.teamStatus = `Team data pushed at ${new Date().toLocaleTimeString()}.`;
+        scheduleRender();
+      }catch(err){
+        state.sync.teamStatus = `Team push error: ${err.message}`;
+        scheduleRender();
+      }
+    }, 500);
+  }
+
+  async function startPersonalSync(teamId, personalId){
+    if(!firebaseApi || !state.sync.firebaseAvailable) return;
+    const { ref, get, set, onValue, off, db } = firebaseApi;
+    if(state.sync.personalRef && state.sync.personalCallback){
+      off(state.sync.personalRef, 'value', state.sync.personalCallback);
+    }
+    const path = personalPath(teamId, personalId);
+    state.sync.personalRef = ref(db, path);
+    state.sync.personalStatus = 'Connecting personal data…';
+
+    const snap = await get(state.sync.personalRef);
+    if(snap.exists()){
+      const remote = snap.val();
+      applyPersonalPayload(remote, {source:'remote'});
+      state.sync.personalStatus = 'Personal data loaded.';
+    }else if(state.personalData){
+      await set(state.sync.personalRef, buildPersonalPayload());
+      state.sync.personalStatus = 'Personal data synced.';
+    }
+
+    state.sync.personalCallback = (snapShot)=>{
+      const payload = snapShot.val();
+      if(!payload) return;
+      if(payload.clientId && payload.clientId === CLIENT_ID) return;
+      applyPersonalPayload(payload, {source:'listener'});
+    };
+    onValue(state.sync.personalRef, state.sync.personalCallback);
+    scheduleRender();
+  }
+
+  function applyPersonalPayload(payload, {source}){
+    if(!payload?.data) return;
+    const updatedAt = Date.parse(payload.updatedAt || 0);
+    if(updatedAt && updatedAt <= state.sync.lastPersonalAt) return;
+    state.sync.lastPersonalAt = updatedAt || Date.now();
+    state.personalData = payload.data;
+    saveJson(KEYS.personalData, state.personalData);
+    state.sync.personalStatus = source === 'remote' ? 'Personal data loaded.' : 'Personal data updated.';
+    scheduleRender();
+  }
+
+  function buildPersonalPayload(){
+    return {
+      version: 1,
+      updatedAt: new Date().toISOString(),
+      clientId: CLIENT_ID,
+      data: state.personalData
+    };
+  }
+
+  function schedulePersonalPush(){
+    if(!firebaseApi || !state.sync.firebaseAvailable) return;
+    if(!state.ui.teamId || !state.ui.personalId || !state.sync.personalRef) return;
+    if(state.sync.personalPushTimer) clearTimeout(state.sync.personalPushTimer);
+    state.sync.personalPushTimer = setTimeout(async ()=>{
+      try{
+        await firebaseApi.set(state.sync.personalRef, buildPersonalPayload());
+        state.sync.personalStatus = `Personal data pushed at ${new Date().toLocaleTimeString()}.`;
+        scheduleRender();
+      }catch(err){
+        state.sync.personalStatus = `Personal push error: ${err.message}`;
+        scheduleRender();
+      }
+    }, 500);
+  }
+
+  function ensurePersonalSection(sectionId, defaults){
+    if(!state.personalData.sections[sectionId]){
+      state.personalData.sections[sectionId] = defaults;
+      savePersonalData();
+    }
+    return state.personalData.sections[sectionId];
+  }
+
+  function renderWelcome(){
+    if(!shouldShowWelcome()) return null;
+    const card = document.createElement('div');
+    card.className = 'welcome';
+    card.innerHTML = `
+      <h2>Welcome to the Dose Calculator</h2>
+      <p class="sub">Load the default sections to start, or connect to a team ID to pull shared data.</p>
+      <ul>
+        <li><strong>Team data</strong> is shared across your group. Everyone can read it; only managers with the owner password can edit it.</li>
+        <li><strong>Personal data</strong> (notes + custom drugs) stays just for you unless you enable personal sync.</li>
+        <li>You can export/import JSON backups at any time from the Cloud Sync section.</li>
+      </ul>
+    `;
+    const btn = document.createElement('button');
+    btn.className = 'btn good';
+    btn.textContent = 'Load default data';
+    btn.addEventListener('click', ()=>{
+      if(state.defaults){
+        setTeamData(structuredClone(state.defaults));
+        state.sync.teamStatus = 'Loaded defaults locally.';
+      }
+    });
+    card.appendChild(btn);
+    return card;
+  }
+
+  function renderDoseTable(section){
+    const table = document.createElement('table');
+    table.className = 'sop weight-table';
+    table.dataset.sectionId = section.id;
+
+    const thead = document.createElement('thead');
+    const htr = document.createElement('tr');
+    const thDrug = document.createElement('th');
+    thDrug.textContent = 'Drug';
+    htr.appendChild(thDrug);
+    weights.forEach(w=>{
+      const th = document.createElement('th');
+      th.textContent = `${w} kg`;
+      th.dataset.w = String(w);
+      htr.appendChild(th);
+    });
+    thead.appendChild(htr);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    (section.rows || []).forEach(row=>{
+      const tr = document.createElement('tr');
+      tr.dataset.amt = String(row.rule?.amt ?? '');
+      tr.dataset.unit = row.rule?.unit || '';
+      if(row.rule?.conc !== undefined){ tr.dataset.conc = String(row.rule.conc); }
+      if(row.rule?.concUnit){ tr.dataset.concu = row.rule.concUnit; }
+      tr.dataset.dp = row.dp ?? 2;
+      tr.dataset.rounding = row.rounding || 'round';
+      tr.dataset.drugLabel = row.drug;
+
+      const tdName = document.createElement('td');
+      tdName.style.textAlign = 'left';
+      tdName.innerHTML = `<div><strong>${row.drug || ''}</strong><span class="drug-note">${row.spec || ''}</span></div>`;
+      tr.appendChild(tdName);
+
+      weights.forEach(w=>{
+        const td = document.createElement('td');
+        const rule = {
+          amt: Number(tr.dataset.amt),
+          unit: tr.dataset.unit,
+          conc: tr.dataset.conc ? Number(tr.dataset.conc) : undefined,
+          concUnit: tr.dataset.concu || undefined
+        };
+        const value = volFor(w, rule);
+        const dp = Number(tr.dataset.dp || 2);
+        const rounding = tr.dataset.rounding || 'round';
+        td.textContent = formatDose(value, dp, rounding);
+        td.dataset.w = String(w);
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    weightTables.push(table);
+    return table;
+  }
+
+  function renderMiscTable(section){
+    const table = document.createElement('table');
+    table.className = 'sop';
+    const thead = document.createElement('thead');
+    const trh = document.createElement('tr');
+    ['Drug', 'Initial / Loading Dose', 'Maintenance'].forEach((txt)=>{
+      const th = document.createElement('th');
+      th.textContent = txt;
+      trh.appendChild(th);
+    });
+    thead.appendChild(trh);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    (section.rows || []).forEach(row=>{
+      const tr = document.createElement('tr');
+      const drug = document.createElement('td');
+      drug.style.textAlign='left';
+      drug.innerHTML = `<strong>${row.drug || ''}</strong>`;
+      const init = document.createElement('td');
+      init.textContent = row.initial || '';
+      const maint = document.createElement('td');
+      maint.textContent = row.maintenance || '';
+      tr.appendChild(drug);
+      tr.appendChild(init);
+      tr.appendChild(maint);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    return table;
+  }
+
+  function renderRateTable(section){
+    const table = document.createElement('table');
+    table.className = 'sop';
+    const thead = document.createElement('thead');
+    const trh = document.createElement('tr');
+    (section.columns || []).forEach(txt=>{
+      const th = document.createElement('th');
+      th.textContent = txt;
+      trh.appendChild(th);
+    });
+    thead.appendChild(trh);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    (section.rows || []).forEach(row=>{
+      const tr = document.createElement('tr');
+      const drug = document.createElement('td');
+      drug.style.textAlign='left';
+      drug.innerHTML = `<div><strong>${row.drug || ''}</strong><span class="drug-note">${row.spec || ''}</span></div>`;
+      tr.appendChild(drug);
+      const conc = Number(row.concUgPerMl || 0);
+      (row.rates || []).forEach(rate=>{
+        const td = document.createElement('td');
+        const mlPerH = conc ? (Number(rate) * 60 / conc) : NaN;
+        td.textContent = formatDose(mlPerH, row.dp ?? 0, row.rounding || 'round');
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    return table;
+  }
+
+  function renderCustomTable(section){
+    const table = document.createElement('table');
+    table.className = 'sop weight-table';
+    table.dataset.sectionId = section.id;
+
+    const thead = document.createElement('thead');
+    const htr = document.createElement('tr');
+    const thDrug = document.createElement('th');
+    thDrug.textContent = 'Drug';
+    htr.appendChild(thDrug);
+    weights.forEach(w=>{
+      const th = document.createElement('th');
+      th.textContent = `${w} kg`;
+      th.dataset.w = String(w);
+      htr.appendChild(th);
+    });
+    thead.appendChild(htr);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    const personalSection = ensurePersonalSection(section.id, { rows: [] });
+    const rows = personalSection.rows;
+    rows.forEach(row => addCustomRow(tbody, row, section));
+    table.appendChild(tbody);
+    weightTables.push(table);
+
+    const foot = document.createElement('div');
+    foot.className = 'note';
+    const addBtn = document.createElement('button');
+    addBtn.className = 'btn';
+    addBtn.textContent = 'Add row';
+    addBtn.addEventListener('click', ()=>{
+      const rowObj = { id: newId('custom'), name: '', mgkg: '', mgml: '', dp: 2, rounding: 'round' };
+      rows.push(rowObj);
+      savePersonalData();
+      addCustomRow(tbody, rowObj, section);
+      if(tablesReady){
+        updateHighlights(state.ui.estimatedWeight);
+        repositionActualAcrossTables(state.ui.actualWeight);
+      }
+    });
+    foot.appendChild(addBtn);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'table-wrap sync-scroll';
+    wrap.appendChild(table);
+    wrap.appendChild(foot);
+    return wrap;
+  }
+
+  function addCustomRow(tbody, row, section){
+    const tr = document.createElement('tr');
+    tr.dataset.id = row.id;
+    tr.dataset.amt = row.mgkg || '';
+    tr.dataset.unit = 'mg_per_kg';
+    tr.dataset.conc = row.mgml || '';
+    tr.dataset.concu = 'mg_per_ml';
+    tr.dataset.dp = row.dp ?? 2;
+    tr.dataset.rounding = row.rounding || 'round';
+
+    const td = document.createElement('td');
+    td.className = 'custom-cell';
+    td.style.textAlign = 'left';
+
+    const editor = document.createElement('div');
+    editor.className = 'custom-editor';
+
+    const name = document.createElement('input');
+    name.className = 'name';
+    name.placeholder = 'Drug name';
+    name.value = row.name || '';
+    name.addEventListener('input', ()=>{
+      row.name = name.value;
+      savePersonalData();
+    });
+
+    const field1 = document.createElement('div');
+    field1.className = 'field';
+    const lab1 = document.createElement('label');
+    lab1.textContent = 'Dose (mg/kg)';
+    const mgkg = document.createElement('input');
+    mgkg.type = 'text';
+    mgkg.inputMode = 'decimal';
+    mgkg.value = row.mgkg || '';
+    mgkg.addEventListener('input', ()=>{
+      row.mgkg = mgkg.value;
+      tr.dataset.amt = row.mgkg || '';
+      savePersonalData();
+      if(tablesReady){
+        updateHighlights(state.ui.estimatedWeight);
+        repositionActualAcrossTables(state.ui.actualWeight);
+      }
+    });
+    field1.appendChild(lab1);
+    field1.appendChild(mgkg);
+
+    const field2 = document.createElement('div');
+    field2.className = 'field';
+    const lab2 = document.createElement('label');
+    lab2.textContent = 'Concentration (mg/mL)';
+    const mgml = document.createElement('input');
+    mgml.type = 'text';
+    mgml.inputMode = 'decimal';
+    mgml.value = row.mgml || '';
+    mgml.addEventListener('input', ()=>{
+      row.mgml = mgml.value;
+      tr.dataset.conc = row.mgml || '';
+      savePersonalData();
+      if(tablesReady){
+        updateHighlights(state.ui.estimatedWeight);
+        repositionActualAcrossTables(state.ui.actualWeight);
+      }
+    });
+    field2.appendChild(lab2);
+    field2.appendChild(mgml);
+
+    const field3 = document.createElement('div');
+    field3.className = 'field';
+    const lab3 = document.createElement('label');
+    lab3.textContent = 'Decimal places';
+    const dpInput = document.createElement('input');
+    dpInput.type = 'number';
+    dpInput.min = '0';
+    dpInput.max = '4';
+    dpInput.value = row.dp ?? 2;
+    dpInput.addEventListener('change', ()=>{
+      row.dp = Number(dpInput.value || 2);
+      tr.dataset.dp = row.dp;
+      savePersonalData();
+      if(tablesReady){
+        updateHighlights(state.ui.estimatedWeight);
+        repositionActualAcrossTables(state.ui.actualWeight);
+      }
+    });
+    const roundingSelect = document.createElement('select');
+    ['round','down','up'].forEach(mode=>{
+      const opt = document.createElement('option');
+      opt.value = mode;
+      opt.textContent = mode === 'round' ? 'Round' : mode === 'down' ? 'Round down' : 'Round up';
+      if(row.rounding === mode) opt.selected = true;
+      roundingSelect.appendChild(opt);
+    });
+    roundingSelect.addEventListener('change', ()=>{
+      row.rounding = roundingSelect.value;
+      tr.dataset.rounding = row.rounding;
+      savePersonalData();
+      if(tablesReady){
+        updateHighlights(state.ui.estimatedWeight);
+        repositionActualAcrossTables(state.ui.actualWeight);
+      }
+    });
+    field3.appendChild(lab3);
+    field3.appendChild(dpInput);
+    field3.appendChild(roundingSelect);
+
+    editor.appendChild(name);
+    editor.appendChild(field1);
+    editor.appendChild(field2);
+    editor.appendChild(field3);
+
+    const del = document.createElement('button');
+    del.className = 'custom-del';
+    del.textContent = '×';
+    del.title = 'Delete row';
+    del.addEventListener('click', ()=>{
+      if(confirm('Delete this custom row?')){
+        const sectionData = ensurePersonalSection(section.id, { rows: [] });
+        sectionData.rows = sectionData.rows.filter(r => r.id !== row.id);
+        savePersonalData();
+        tr.remove();
+        if(tablesReady){
+          updateHighlights(state.ui.estimatedWeight);
+          repositionActualAcrossTables(state.ui.actualWeight);
+        }
+      }
+    });
+
+    td.appendChild(editor);
+    td.appendChild(del);
+    tr.appendChild(td);
+
+    weights.forEach(w=>{
+      const tdw = document.createElement('td');
+      const rule = {
+        amt: safeNumber(row.mgkg) ?? NaN,
+        unit: 'mg_per_kg',
+        conc: safeNumber(row.mgml) ?? NaN,
+        concUnit: 'mg_per_ml'
+      };
+      const val = volFor(w, rule);
+      const dp = row.dp ?? 2;
+      const rounding = row.rounding || 'round';
+      tdw.textContent = formatDose(val, dp, rounding);
+      tdw.dataset.w = String(w);
+      tr.appendChild(tdw);
+    });
+
+    tbody.appendChild(tr);
+  }
+
+  function renderNotesSection(section){
+    const table = document.createElement('table');
+    table.className = 'sop';
+    const tbody = document.createElement('tbody');
+    table.appendChild(tbody);
+
+    const personalSection = ensurePersonalSection(section.id, { notes: [] });
+    if(!personalSection.notes.length){
+      personalSection.notes.push({ id: newId('note'), text: '' });
+      savePersonalData();
+    }
+
+    personalSection.notes.forEach(note => addNoteRow(tbody, note, section));
+
+    const foot = document.createElement('div');
+    foot.className = 'note';
+    const addBtn = document.createElement('button');
+    addBtn.className = 'btn';
+    addBtn.textContent = 'Add note';
+    addBtn.addEventListener('click', ()=>{
+      const row = { id: newId('note'), text: '' };
+      personalSection.notes.push(row);
+      savePersonalData();
+      addNoteRow(tbody, row, section);
+    });
+    foot.appendChild(addBtn);
+
+    const hint = document.createElement('div');
+    hint.className = 'note';
+    hint.textContent = 'Notes are saved locally (and in personal sync, if enabled).';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'table-wrap';
+    wrap.appendChild(table);
+    wrap.appendChild(foot);
+    wrap.appendChild(hint);
+    return wrap;
+  }
+
+  function addNoteRow(tbody, note, section){
+    const tr = document.createElement('tr');
+    tr.className = 'note-row';
+    tr.dataset.id = note.id;
+    const td = document.createElement('td');
+    td.style.textAlign = 'left';
+
+    const ta = document.createElement('textarea');
+    ta.className = 'notes-text';
+    ta.placeholder = 'Type a note…';
+    ta.value = note.text || '';
+    ta.addEventListener('input', ()=>{
+      note.text = ta.value;
+      savePersonalData();
+    });
+
+    const del = document.createElement('button');
+    del.className = 'note-del';
+    del.textContent = '×';
+    del.title = 'Delete note';
+    del.addEventListener('click', ()=>{
+      if(confirm('Delete this note?')){
+        const sectionData = ensurePersonalSection(section.id, { notes: [] });
+        sectionData.notes = sectionData.notes.filter(n => n.id !== note.id);
+        if(sectionData.notes.length === 0){
+          sectionData.notes.push({ id: newId('note'), text: '' });
+        }
+        savePersonalData();
+        tr.remove();
+        if(sectionData.notes.length === 1){
+          addNoteRow(tbody, sectionData.notes[0], section);
+        }
+      }
+    });
+
+    td.appendChild(ta);
+    td.appendChild(del);
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  }
+
+  function renderTextBlock(section){
+    const wrap = document.createElement('div');
+    wrap.className = 'table-wrap';
+    wrap.style.background = section.background || '#ffffff';
+    wrap.style.padding = '12px';
+    const text = document.createElement('div');
+    text.style.fontSize = `${section.textSize || 14}px`;
+    text.textContent = section.text || '';
+    wrap.appendChild(text);
+    return wrap;
+  }
+
+  function buildSectionDetails(section, index, total){
+    const details = document.createElement('details');
+    details.id = section.id;
+    details.open = (storage.get('open:'+section.id) ?? '1') === '1';
+    details.addEventListener('toggle', ()=> storage.set('open:'+section.id, details.open ? '1' : '0'));
+
+    const summary = document.createElement('summary');
+    const left = document.createElement('div');
+    left.className = 'summary-left';
+    if(state.ui.editMode){
+      const handle = document.createElement('span');
+      handle.className = 'drag-handle';
+      handle.textContent = '⋮⋮';
+      handle.title = 'Drag to reorder';
+      handle.draggable = true;
+      handle.addEventListener('dragstart', (e)=>{
+        details.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', section.id);
+      });
+      handle.addEventListener('dragend', ()=> details.classList.remove('dragging'));
+      left.appendChild(handle);
+    }
+    const title = document.createElement('span');
+    title.textContent = section.title || 'Untitled section';
+    left.appendChild(title);
+
+    const right = document.createElement('div');
+    right.className = 'summary-right';
+    if(section.unitLabel){
+      const meta = document.createElement('span');
+      meta.className = 'meta';
+      meta.textContent = `Units: ${section.unitLabel}`;
+      right.appendChild(meta);
+    }
+    if(state.ui.editMode){
+      const badge = document.createElement('span');
+      badge.className = 'pill';
+      badge.textContent = section.scope === 'personal' ? 'Personal' : 'Team';
+      right.appendChild(badge);
+      const upBtn = document.createElement('button');
+      upBtn.className = 'btn small';
+      upBtn.textContent = 'Up';
+      upBtn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        moveSection(index, -1);
+      });
+      const downBtn = document.createElement('button');
+      downBtn.className = 'btn small';
+      downBtn.textContent = 'Down';
+      downBtn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        moveSection(index, 1);
+      });
+      right.appendChild(upBtn);
+      right.appendChild(downBtn);
+    }
+
+    summary.appendChild(left);
+    summary.appendChild(right);
+    details.appendChild(summary);
+
+    let wrap = document.createElement('div');
+    wrap.className = section.type === 'custom-table' || section.type === 'dose-table' || section.type === 'rate-table'
+      ? 'table-wrap sync-scroll'
+      : 'table-wrap';
+
+    let content = null;
+    if(section.type === 'dose-table'){
+      content = renderDoseTable(section);
+      wrap.appendChild(content);
+      if(section.note){
+        const foot = document.createElement('div');
+        foot.className = 'note';
+        foot.innerHTML = section.note;
+        wrap.appendChild(foot);
+      }
+    }else if(section.type === 'misc-table'){
+      content = renderMiscTable(section);
+      wrap.appendChild(content);
+    }else if(section.type === 'rate-table'){
+      content = renderRateTable(section);
+      wrap.appendChild(content);
+      if(section.note){
+        const foot = document.createElement('div');
+        foot.className = 'note';
+        foot.textContent = section.note;
+        wrap.appendChild(foot);
+      }
+    }else if(section.type === 'custom-table'){
+      wrap = renderCustomTable(section);
+    }else if(section.type === 'notes'){
+      wrap = renderNotesSection(section);
+    }else if(section.type === 'text-block'){
+      wrap = renderTextBlock(section);
+    }
+
+    details.appendChild(wrap);
+
+    if(state.ui.editMode){
+      details.appendChild(renderSectionEditor(section));
+      details.addEventListener('dragover', (e)=>{
+        e.preventDefault();
+        details.classList.add('drag-over');
+      });
+      details.addEventListener('dragleave', ()=> details.classList.remove('drag-over'));
+      details.addEventListener('drop', (e)=>{
+        e.preventDefault();
+        details.classList.remove('drag-over');
+        const fromId = e.dataTransfer.getData('text/plain');
+        if(fromId && fromId !== section.id){
+          reorderSection(fromId, section.id);
+        }
+      });
+    }
+
+    return details;
+  }
+
+  function renderSectionEditor(section){
+    const panel = document.createElement('div');
+    panel.className = 'edit-panel';
+
+    const grid = document.createElement('div');
+    grid.className = 'edit-grid';
+
+    const titleLabel = document.createElement('label');
+    titleLabel.textContent = 'Section title';
+    const titleInput = document.createElement('input');
+    titleInput.value = section.title || '';
+    titleInput.addEventListener('change', ()=>{
+      section.title = titleInput.value;
+      saveTeamData();
+    });
+
+    const typeLabel = document.createElement('label');
+    typeLabel.textContent = 'Section type';
+    const typeSelect = document.createElement('select');
+    ['dose-table','misc-table','rate-table','custom-table','notes','text-block'].forEach(type=>{
+      const opt = document.createElement('option');
+      opt.value = type;
+      opt.textContent = type.replace('-', ' ');
+      if(section.type === type) opt.selected = true;
+      typeSelect.appendChild(opt);
+    });
+    typeSelect.addEventListener('change', ()=>{
+      section.type = typeSelect.value;
+      if(section.type === 'dose-table'){
+        section.rows = section.rows || [];
+        section.unitLabel = section.unitLabel || 'mL';
+      }
+      if(section.type === 'misc-table'){
+        section.rows = section.rows || [];
+        section.unitLabel = '';
+      }
+      if(section.type === 'rate-table'){
+        section.rows = section.rows || [];
+        section.columns = section.columns || ['Drug'];
+        section.unitLabel = section.unitLabel || 'mL/h';
+      }
+      if(section.type === 'text-block'){
+        section.text = section.text || '';
+        section.textSize = section.textSize || 14;
+        section.background = section.background || '#ffffff';
+      }
+      saveTeamData();
+    });
+
+    const scopeLabel = document.createElement('label');
+    scopeLabel.textContent = 'Scope';
+    const scopeSelect = document.createElement('select');
+    ['team','personal'].forEach(scope=>{
+      const opt = document.createElement('option');
+      opt.value = scope;
+      opt.textContent = scope === 'team' ? 'Team shared' : 'Personal only';
+      if(section.scope === scope) opt.selected = true;
+      scopeSelect.appendChild(opt);
+    });
+    scopeSelect.addEventListener('change', ()=>{
+      section.scope = scopeSelect.value;
+      saveTeamData();
+    });
+
+    const unitLabel = document.createElement('label');
+    unitLabel.textContent = 'Unit label';
+    const unitInput = document.createElement('input');
+    unitInput.value = section.unitLabel || '';
+    unitInput.addEventListener('change', ()=>{
+      section.unitLabel = unitInput.value;
+      saveTeamData();
+    });
+
+    const noteLabel = document.createElement('label');
+    noteLabel.textContent = 'Section note';
+    const noteInput = document.createElement('textarea');
+    noteInput.value = section.note || '';
+    noteInput.addEventListener('change', ()=>{
+      section.note = noteInput.value;
+      saveTeamData();
+    });
+
+    grid.appendChild(titleLabel);
+    grid.appendChild(titleInput);
+    grid.appendChild(typeLabel);
+    grid.appendChild(typeSelect);
+    grid.appendChild(scopeLabel);
+    grid.appendChild(scopeSelect);
+    grid.appendChild(unitLabel);
+    grid.appendChild(unitInput);
+    grid.appendChild(noteLabel);
+    grid.appendChild(noteInput);
+
+    if(section.type === 'text-block'){
+      const textLabel = document.createElement('label');
+      textLabel.textContent = 'Text';
+      const textInput = document.createElement('textarea');
+      textInput.value = section.text || '';
+      textInput.addEventListener('change', ()=>{
+        section.text = textInput.value;
+        saveTeamData();
+      });
+
+      const sizeLabel = document.createElement('label');
+      sizeLabel.textContent = 'Text size (px)';
+      const sizeInput = document.createElement('input');
+      sizeInput.type = 'number';
+      sizeInput.min = '10';
+      sizeInput.max = '28';
+      sizeInput.value = section.textSize || 14;
+      sizeInput.addEventListener('change', ()=>{
+        section.textSize = Number(sizeInput.value || 14);
+        saveTeamData();
+      });
+
+      const bgLabel = document.createElement('label');
+      bgLabel.textContent = 'Background color';
+      const bgInput = document.createElement('input');
+      bgInput.type = 'color';
+      bgInput.value = section.background || '#ffffff';
+      bgInput.addEventListener('change', ()=>{
+        section.background = bgInput.value;
+        saveTeamData();
+      });
+
+      grid.appendChild(textLabel);
+      grid.appendChild(textInput);
+      grid.appendChild(sizeLabel);
+      grid.appendChild(sizeInput);
+      grid.appendChild(bgLabel);
+      grid.appendChild(bgInput);
+    }
+
+    panel.appendChild(grid);
+
+    if(section.type === 'dose-table'){
+      const subtitle = document.createElement('div');
+      subtitle.className = 'edit-subtitle';
+      subtitle.textContent = 'Dose rows';
+      panel.appendChild(subtitle);
+
+      (section.rows || []).forEach((row, idx)=>{
+        const rowWrap = document.createElement('div');
+        rowWrap.className = 'edit-row';
+
+        const drug = document.createElement('input');
+        drug.value = row.drug || '';
+        drug.placeholder = 'Drug';
+        drug.addEventListener('change', ()=>{ row.drug = drug.value; saveTeamData(); });
+
+        const spec = document.createElement('input');
+        spec.value = row.spec || '';
+        spec.placeholder = 'Spec';
+        spec.addEventListener('change', ()=>{ row.spec = spec.value; saveTeamData(); });
+
+        const amt = document.createElement('input');
+        amt.value = row.rule?.amt ?? '';
+        amt.placeholder = 'Dose';
+        amt.addEventListener('change', ()=>{ row.rule = row.rule || {}; row.rule.amt = Number(amt.value); saveTeamData(); });
+
+        const unit = document.createElement('select');
+        ['mg_per_kg','ug_per_kg','mg_per_kg_per_h','ug_per_kg_per_h','ml_per_kg'].forEach(u=>{
+          const opt = document.createElement('option');
+          opt.value = u;
+          opt.textContent = u.replace(/_/g, ' ');
+          if(row.rule?.unit === u) opt.selected = true;
+          unit.appendChild(opt);
+        });
+        unit.addEventListener('change', ()=>{ row.rule = row.rule || {}; row.rule.unit = unit.value; saveTeamData(); });
+
+        const conc = document.createElement('input');
+        conc.value = row.rule?.conc ?? '';
+        conc.placeholder = 'Conc';
+        conc.addEventListener('change', ()=>{ row.rule = row.rule || {}; row.rule.conc = Number(conc.value); saveTeamData(); });
+
+        const concUnit = document.createElement('select');
+        ['mg_per_ml','ug_per_ml'].forEach(cu=>{
+          const opt = document.createElement('option');
+          opt.value = cu;
+          opt.textContent = cu.replace(/_/g, ' ');
+          if(row.rule?.concUnit === cu) opt.selected = true;
+          concUnit.appendChild(opt);
+        });
+        concUnit.addEventListener('change', ()=>{ row.rule = row.rule || {}; row.rule.concUnit = concUnit.value; saveTeamData(); });
+
+        const dp = document.createElement('input');
+        dp.type = 'number';
+        dp.min = '0';
+        dp.max = '4';
+        dp.value = row.dp ?? 2;
+        dp.addEventListener('change', ()=>{ row.dp = Number(dp.value || 2); saveTeamData(); });
+
+        const rounding = document.createElement('select');
+        ['round','down','up'].forEach(mode=>{
+          const opt = document.createElement('option');
+          opt.value = mode;
+          opt.textContent = mode === 'round' ? 'Round' : mode === 'down' ? 'Round down' : 'Round up';
+          if((row.rounding || 'round') === mode) opt.selected = true;
+          rounding.appendChild(opt);
+        });
+        rounding.addEventListener('change', ()=>{ row.rounding = rounding.value; saveTeamData(); });
+
+        const del = document.createElement('button');
+        del.className = 'btn bad small';
+        del.textContent = 'Delete';
+        del.addEventListener('click', ()=>{
+          section.rows.splice(idx, 1);
+          saveTeamData();
+        });
+
+        rowWrap.appendChild(drug);
+        rowWrap.appendChild(spec);
+        rowWrap.appendChild(amt);
+        rowWrap.appendChild(unit);
+        rowWrap.appendChild(conc);
+        rowWrap.appendChild(concUnit);
+        rowWrap.appendChild(dp);
+        rowWrap.appendChild(rounding);
+        rowWrap.appendChild(del);
+        panel.appendChild(rowWrap);
+      });
+
+      const addRow = document.createElement('button');
+      addRow.className = 'btn';
+      addRow.textContent = 'Add dose row';
+      addRow.addEventListener('click', ()=>{
+        section.rows = section.rows || [];
+        section.rows.push({
+          id: newId('dose'),
+          drug: 'New drug',
+          spec: '',
+          rule: { amt: 0, unit: 'mg_per_kg', conc: 1, concUnit: 'mg_per_ml' },
+          dp: 2,
+          rounding: 'round'
+        });
+        saveTeamData();
+      });
+      panel.appendChild(addRow);
+    }
+
+    if(section.type === 'misc-table'){
+      const subtitle = document.createElement('div');
+      subtitle.className = 'edit-subtitle';
+      subtitle.textContent = 'Misc rows';
+      panel.appendChild(subtitle);
+
+      (section.rows || []).forEach((row, idx)=>{
+        const rowWrap = document.createElement('div');
+        rowWrap.className = 'edit-row';
+
+        const drug = document.createElement('input');
+        drug.value = row.drug || '';
+        drug.placeholder = 'Drug';
+        drug.addEventListener('change', ()=>{ row.drug = drug.value; saveTeamData(); });
+
+        const init = document.createElement('input');
+        init.value = row.initial || '';
+        init.placeholder = 'Initial';
+        init.addEventListener('change', ()=>{ row.initial = init.value; saveTeamData(); });
+
+        const maint = document.createElement('input');
+        maint.value = row.maintenance || '';
+        maint.placeholder = 'Maintenance';
+        maint.addEventListener('change', ()=>{ row.maintenance = maint.value; saveTeamData(); });
+
+        const del = document.createElement('button');
+        del.className = 'btn bad small';
+        del.textContent = 'Delete';
+        del.addEventListener('click', ()=>{
+          section.rows.splice(idx, 1);
+          saveTeamData();
+        });
+
+        rowWrap.appendChild(drug);
+        rowWrap.appendChild(init);
+        rowWrap.appendChild(maint);
+        rowWrap.appendChild(del);
+        panel.appendChild(rowWrap);
+      });
+
+      const addRow = document.createElement('button');
+      addRow.className = 'btn';
+      addRow.textContent = 'Add misc row';
+      addRow.addEventListener('click', ()=>{
+        section.rows = section.rows || [];
+        section.rows.push({ id: newId('misc'), drug: 'New drug', initial: '', maintenance: '' });
+        saveTeamData();
+      });
+      panel.appendChild(addRow);
+    }
+
+    if(section.type === 'rate-table'){
+      const subtitle = document.createElement('div');
+      subtitle.className = 'edit-subtitle';
+      subtitle.textContent = 'Rate rows';
+      panel.appendChild(subtitle);
+
+      const columns = document.createElement('input');
+      columns.value = (section.columns || []).join(', ');
+      columns.placeholder = 'Columns (comma separated)';
+      columns.addEventListener('change', ()=>{
+        section.columns = columns.value.split(',').map(v => v.trim()).filter(Boolean);
+        saveTeamData();
+      });
+      panel.appendChild(columns);
+
+      (section.rows || []).forEach((row, idx)=>{
+        const rowWrap = document.createElement('div');
+        rowWrap.className = 'edit-row';
+
+        const drug = document.createElement('input');
+        drug.value = row.drug || '';
+        drug.placeholder = 'Drug';
+        drug.addEventListener('change', ()=>{ row.drug = drug.value; saveTeamData(); });
+
+        const spec = document.createElement('input');
+        spec.value = row.spec || '';
+        spec.placeholder = 'Spec';
+        spec.addEventListener('change', ()=>{ row.spec = spec.value; saveTeamData(); });
+
+        const conc = document.createElement('input');
+        conc.value = row.concUgPerMl ?? '';
+        conc.placeholder = 'Conc (µg/mL)';
+        conc.addEventListener('change', ()=>{ row.concUgPerMl = Number(conc.value); saveTeamData(); });
+
+        const rates = document.createElement('input');
+        rates.value = (row.rates || []).join(', ');
+        rates.placeholder = 'Rates (µg/min)';
+        rates.addEventListener('change', ()=>{
+          row.rates = rates.value.split(',').map(v => Number(v.trim())).filter(n => Number.isFinite(n));
+          saveTeamData();
+        });
+
+        const dp = document.createElement('input');
+        dp.type = 'number';
+        dp.min = '0';
+        dp.max = '4';
+        dp.value = row.dp ?? 0;
+        dp.addEventListener('change', ()=>{ row.dp = Number(dp.value || 0); saveTeamData(); });
+
+        const rounding = document.createElement('select');
+        ['round','down','up'].forEach(mode=>{
+          const opt = document.createElement('option');
+          opt.value = mode;
+          opt.textContent = mode === 'round' ? 'Round' : mode === 'down' ? 'Round down' : 'Round up';
+          if((row.rounding || 'round') === mode) opt.selected = true;
+          rounding.appendChild(opt);
+        });
+        rounding.addEventListener('change', ()=>{ row.rounding = rounding.value; saveTeamData(); });
+
+        const del = document.createElement('button');
+        del.className = 'btn bad small';
+        del.textContent = 'Delete';
+        del.addEventListener('click', ()=>{
+          section.rows.splice(idx, 1);
+          saveTeamData();
+        });
+
+        rowWrap.appendChild(drug);
+        rowWrap.appendChild(spec);
+        rowWrap.appendChild(conc);
+        rowWrap.appendChild(rates);
+        rowWrap.appendChild(dp);
+        rowWrap.appendChild(rounding);
+        rowWrap.appendChild(del);
+        panel.appendChild(rowWrap);
+      });
+
+      const addRow = document.createElement('button');
+      addRow.className = 'btn';
+      addRow.textContent = 'Add rate row';
+      addRow.addEventListener('click', ()=>{
+        section.rows = section.rows || [];
+        section.rows.push({
+          id: newId('rate'),
+          drug: 'New drug',
+          spec: '',
+          concUgPerMl: 1,
+          rates: [1,2],
+          dp: 0,
+          rounding: 'round'
+        });
+        saveTeamData();
+      });
+      panel.appendChild(addRow);
+    }
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'btn bad';
+    removeBtn.textContent = 'Remove section';
+    removeBtn.addEventListener('click', ()=>{
+      if(confirm('Remove this section?')){
+        const page = getActivePage();
+        if(!page) return;
+        page.sections = page.sections.filter(s => s.id !== section.id);
+        saveTeamData();
+      }
+    });
+    panel.appendChild(removeBtn);
+
+    return panel;
+  }
+
+  function moveSection(index, delta){
+    const page = getActivePage();
+    if(!page) return;
+    const nextIndex = index + delta;
+    if(nextIndex < 0 || nextIndex >= page.sections.length) return;
+    const sections = page.sections;
+    const [section] = sections.splice(index, 1);
+    sections.splice(nextIndex, 0, section);
+    saveTeamData();
+  }
+
+  function reorderSection(fromId, toId){
+    const page = getActivePage();
+    if(!page) return;
+    const sections = page.sections;
+    const fromIndex = sections.findIndex(s => s.id === fromId);
+    const toIndex = sections.findIndex(s => s.id === toId);
+    if(fromIndex === -1 || toIndex === -1) return;
+    const [section] = sections.splice(fromIndex, 1);
+    sections.splice(toIndex, 0, section);
+    saveTeamData();
+  }
+
+  function renderSections(){
+    const page = getActivePage();
+    if(!page) return;
+    page.sections.forEach((section, idx)=>{
+      const details = buildSectionDetails(section, idx, page.sections.length);
+      app.appendChild(details);
+    });
+
+    if(state.ui.editMode){
+      const addSection = document.createElement('button');
+      addSection.className = 'btn';
+      addSection.textContent = 'Add section';
+      addSection.addEventListener('click', ()=>{
+        page.sections.push({
+          id: newId('section'),
+          type: 'dose-table',
+          title: 'New section',
+          note: '',
+          unitLabel: 'mL',
+          scope: 'team',
+          rows: []
+        });
+        saveTeamData();
+      });
+      app.appendChild(addSection);
+    }
+  }
+
+  function renderSyncSection(){
+    const details = document.createElement('details');
+    details.id = 'cloud-sync';
+    details.open = (storage.get('open:cloud-sync') ?? '1') === '1';
+    details.addEventListener('toggle', ()=> storage.set('open:cloud-sync', details.open ? '1' : '0'));
+
+    const summary = document.createElement('summary');
+    summary.innerHTML = `<span>Cloud Sync & Edit</span>`;
+    details.appendChild(summary);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'table-wrap';
+
+    const table = document.createElement('table');
+    table.className = 'sop';
+    const tbody = document.createElement('tbody');
+
+    const teamRow = document.createElement('tr');
+    const teamLabel = document.createElement('td');
+    teamLabel.textContent = 'Team ID';
+    const teamValue = document.createElement('td');
+    teamValue.className = 'sync-field';
+
+    const teamInput = document.createElement('input');
+    teamInput.type = 'text';
+    teamInput.placeholder = 'e.g. farm-alpha';
+    teamInput.value = state.ui.teamId || '';
+
+    const teamBtn = document.createElement('button');
+    teamBtn.className = 'btn good';
+    teamBtn.textContent = 'Connect Team';
+    teamBtn.addEventListener('click', async ()=>{
+      const newId = sanitizeId(teamInput.value);
+      if(!newId){
+        state.sync.teamStatus = 'Please enter a valid team ID.';
+        scheduleRender();
+        return;
+      }
+      state.ui.teamId = newId;
+      state.ui.ownerAuthorized = false;
+      state.ui.editMode = false;
+      storage.set(KEYS.teamId, newId);
+      if(state.sync.firebaseAvailable){
+        await startTeamSync(newId);
+      }else{
+        state.sync.teamStatus = 'Firebase unavailable; team saved locally.';
+      }
+      if(state.ui.personalId && state.sync.firebaseAvailable){
+        await startPersonalSync(newId, state.ui.personalId);
+      }
+      scheduleRender();
+    });
+
+    const teamGen = document.createElement('button');
+    teamGen.className = 'btn';
+    teamGen.textContent = 'Generate ID';
+    teamGen.addEventListener('click', ()=>{
+      teamInput.value = `team-${Math.random().toString(36).slice(2,8)}`;
+    });
+
+    teamValue.appendChild(teamInput);
+    teamValue.appendChild(teamGen);
+    teamValue.appendChild(teamBtn);
+    teamRow.appendChild(teamLabel);
+    teamRow.appendChild(teamValue);
+    tbody.appendChild(teamRow);
+
+    const passRow = document.createElement('tr');
+    const passLabel = document.createElement('td');
+    passLabel.textContent = 'Owner password';
+    const passValue = document.createElement('td');
+    passValue.className = 'sync-field';
+
+    const passInput = document.createElement('input');
+    passInput.type = 'password';
+    passInput.placeholder = state.teamData?.ownerPasswordHash ? 'Enter password' : 'Set new password';
+
+    const remember = document.createElement('label');
+    const rememberBox = document.createElement('input');
+    rememberBox.type = 'checkbox';
+    rememberBox.checked = state.ui.rememberOwner;
+    rememberBox.addEventListener('change', ()=>{
+      state.ui.rememberOwner = rememberBox.checked;
+      saveUiState();
+    });
+    remember.appendChild(rememberBox);
+    remember.appendChild(document.createTextNode('Remember'));
+
+    const passBtn = document.createElement('button');
+    passBtn.className = 'btn';
+    passBtn.textContent = state.teamData?.ownerPasswordHash ? 'Verify' : 'Set password';
+    passBtn.addEventListener('click', async ()=>{
+      const entered = passInput.value.trim();
+      if(!entered){
+        state.sync.teamStatus = 'Enter a password.';
+        scheduleRender();
+        return;
+      }
+      const hash = await hashPassword(entered);
+      if(state.teamData?.ownerPasswordHash){
+        if(hash === state.teamData.ownerPasswordHash){
+          state.ui.ownerAuthorized = true;
+          if(state.ui.rememberOwner){
+            storage.set(KEYS.ownerHash, hash);
+          }
+          state.sync.teamStatus = 'Owner access granted.';
+        }else{
+          state.ui.ownerAuthorized = false;
+          state.sync.teamStatus = 'Incorrect password.';
+        }
+      }else if(state.teamData){
+        state.teamData.ownerPasswordHash = hash;
+        state.ui.ownerAuthorized = true;
+        if(state.ui.rememberOwner){
+          storage.set(KEYS.ownerHash, hash);
+        }
+        saveTeamData();
+        state.sync.teamStatus = 'Owner password set.';
+      }
+      passInput.value = '';
+      scheduleRender();
+    });
+
+    passValue.appendChild(passInput);
+    passValue.appendChild(passBtn);
+    passValue.appendChild(remember);
+    passRow.appendChild(passLabel);
+    passRow.appendChild(passValue);
+    tbody.appendChild(passRow);
+
+    const editRow = document.createElement('tr');
+    const editLabel = document.createElement('td');
+    editLabel.textContent = 'Edit mode';
+    const editValue = document.createElement('td');
+    editValue.className = 'sync-field';
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn primary';
+    editBtn.textContent = state.ui.editMode ? 'Exit edit mode' : 'Enter edit mode';
+    editBtn.disabled = !state.ui.ownerAuthorized;
+    editBtn.addEventListener('click', ()=>{
+      state.ui.editMode = !state.ui.editMode;
+      scheduleRender();
+    });
+    const editHint = document.createElement('span');
+    editHint.className = 'note';
+    editHint.textContent = state.ui.ownerAuthorized ? 'Edit team sections, reorder, and adjust rounding.' : 'Owner password required.';
+    editValue.appendChild(editBtn);
+    editValue.appendChild(editHint);
+    editRow.appendChild(editLabel);
+    editRow.appendChild(editValue);
+    tbody.appendChild(editRow);
+
+    const statusRow = document.createElement('tr');
+    const statusLabel = document.createElement('td');
+    statusLabel.textContent = 'Team status';
+    const statusValue = document.createElement('td');
+    const statusText = document.createElement('div');
+    statusText.className = 'status';
+    statusText.textContent = state.sync.teamStatus;
+    statusValue.appendChild(statusText);
+    statusRow.appendChild(statusLabel);
+    statusRow.appendChild(statusValue);
+    tbody.appendChild(statusRow);
+
+    const personalRow = document.createElement('tr');
+    const personalLabel = document.createElement('td');
+    personalLabel.textContent = 'Personal sync';
+    const personalValue = document.createElement('td');
+    personalValue.className = 'sync-field';
+    const personalInput = document.createElement('input');
+    personalInput.type = 'text';
+    personalInput.value = state.ui.personalId;
+
+    const personalBtn = document.createElement('button');
+    personalBtn.className = 'btn';
+    personalBtn.textContent = 'Enable personal sync';
+    personalBtn.disabled = !state.ui.teamId;
+    personalBtn.addEventListener('click', async ()=>{
+      const newId = sanitizeId(personalInput.value);
+      if(!newId){
+        state.sync.personalStatus = 'Enter a valid personal ID.';
+        scheduleRender();
+        return;
+      }
+      state.ui.personalId = newId;
+      storage.set(KEYS.personalId, newId);
+      if(state.sync.firebaseAvailable){
+        await startPersonalSync(state.ui.teamId, newId);
+      }else{
+        state.sync.personalStatus = 'Firebase unavailable; personal data saved locally.';
+      }
+      scheduleRender();
+    });
+
+    personalValue.appendChild(personalInput);
+    personalValue.appendChild(personalBtn);
+    personalRow.appendChild(personalLabel);
+    personalRow.appendChild(personalValue);
+    tbody.appendChild(personalRow);
+
+    const personalStatusRow = document.createElement('tr');
+    const personalStatusLabel = document.createElement('td');
+    personalStatusLabel.textContent = 'Personal status';
+    const personalStatusValue = document.createElement('td');
+    const personalStatus = document.createElement('div');
+    personalStatus.className = 'status';
+    personalStatus.textContent = state.sync.personalStatus;
+    personalStatusValue.appendChild(personalStatus);
+    personalStatusRow.appendChild(personalStatusLabel);
+    personalStatusRow.appendChild(personalStatusValue);
+    tbody.appendChild(personalStatusRow);
+
+    const backupRow = document.createElement('tr');
+    const backupLabel = document.createElement('td');
+    backupLabel.textContent = 'Backup';
+    const backupValue = document.createElement('td');
+    backupValue.className = 'sync-field';
+
+    const downloadBtn = document.createElement('button');
+    downloadBtn.className = 'btn';
+    downloadBtn.textContent = 'Download JSON';
+    downloadBtn.addEventListener('click', ()=>{
+      const payload = {
+        teamData: state.teamData,
+        personalData: state.personalData,
+        exportedAt: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `dose-calculator-backup-${new Date().toISOString().slice(0,10)}.json`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
+
+    const uploadInput = document.createElement('input');
+    uploadInput.type = 'file';
+    uploadInput.accept = 'application/json';
+    uploadInput.style.display = 'none';
+    uploadInput.addEventListener('change', async ()=>{
+      const file = uploadInput.files[0];
+      if(!file) return;
+      try{
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if(confirm('Import this backup? This will replace current team + personal data.')){
+          if(data.teamData){ setTeamData(data.teamData); }
+          if(data.personalData){ setPersonalData(data.personalData); }
+          state.sync.teamStatus = 'Backup imported.';
+        }
+      }catch(err){
+        alert('Invalid backup file.');
+      }finally{
+        uploadInput.value = '';
+        scheduleRender();
+      }
+    });
+
+    const uploadBtn = document.createElement('button');
+    uploadBtn.className = 'btn';
+    uploadBtn.textContent = 'Upload JSON';
+    uploadBtn.addEventListener('click', ()=> uploadInput.click());
+
+    backupValue.appendChild(downloadBtn);
+    backupValue.appendChild(uploadBtn);
+    backupValue.appendChild(uploadInput);
+    backupRow.appendChild(backupLabel);
+    backupRow.appendChild(backupValue);
+    tbody.appendChild(backupRow);
+
+    const actionRow = document.createElement('tr');
+    const actionLabel = document.createElement('td');
+    actionLabel.textContent = 'Actions';
+    const actionValue = document.createElement('td');
+    actionValue.className = 'sync-field';
+
+    const defaultsBtn = document.createElement('button');
+    defaultsBtn.className = 'btn warn';
+    defaultsBtn.textContent = 'Load defaults';
+    defaultsBtn.addEventListener('click', ()=>{
+      if(confirm('Load default team sections? This will overwrite current team data.')){
+        if(state.defaults){
+          setTeamData(structuredClone(state.defaults));
+          state.sync.teamStatus = 'Defaults loaded.';
+        }
+      }
+    });
+
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'btn bad';
+    clearBtn.textContent = 'Clear all';
+    clearBtn.addEventListener('click', ()=>{
+      if(confirm('Clear all local data? This will remove team, personal, and UI settings from this browser.')){
+        Object.values(KEYS).forEach(key => storage.remove(key));
+        state.teamData = null;
+        state.personalData = { version: 1, sections: {} };
+        state.ui = {
+          estimatedWeight: 20,
+          actualWeight: 30.0,
+          speciesId: null,
+          pageId: null,
+          teamId: '',
+          personalId: '',
+          ownerAuthorized: false,
+          rememberOwner: false,
+          editMode: false,
+          showTrolleyCalc: false,
+          trolleyWeight: '',
+          trolleyPlusWeight: ''
+        };
+        scheduleRender();
+      }
+    });
+
+    actionValue.appendChild(defaultsBtn);
+    actionValue.appendChild(clearBtn);
+    actionRow.appendChild(actionLabel);
+    actionRow.appendChild(actionValue);
+    tbody.appendChild(actionRow);
+
+    const infoRow = document.createElement('tr');
+    const infoLabel = document.createElement('td');
+    infoLabel.textContent = 'Info';
+    const infoValue = document.createElement('td');
+    infoValue.innerHTML = `<div class="note">Team data is shared across your group. Personal data stays just for you unless personal sync is enabled. Cloud sync requires Firebase; if it is offline, local storage still works.</div>`;
+    infoRow.appendChild(infoLabel);
+    infoRow.appendChild(infoValue);
+    tbody.appendChild(infoRow);
+
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    details.appendChild(wrap);
+    app.appendChild(details);
+  }
+
+  function renderApp(){
+    app.innerHTML = '';
+    weightTables = [];
+
+    const welcome = renderWelcome();
+    if(welcome) app.appendChild(welcome);
+
+    if(state.teamData){
+      renderSections();
+    }else if(state.defaults && !shouldShowWelcome()){
+      const emptyNote = document.createElement('div');
+      emptyNote.className = 'note';
+      emptyNote.textContent = 'No team data loaded yet. Load defaults or connect to a team ID.';
+      app.appendChild(emptyNote);
+    }
+
+    renderSyncSection();
+
+    tablesReady = true;
+    updateHighlights(state.ui.estimatedWeight);
+    repositionActualAcrossTables(state.ui.actualWeight);
+    initScrollSync();
+
+    updateSpeciesControl();
+    updatePageControl();
+  }
+
+  function updateSpeciesControl(){
+    const speciesControl = document.getElementById('speciesControl');
+    const species = state.teamData?.species || [];
+    speciesSelect.innerHTML = '';
+    species.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.name;
+      speciesSelect.appendChild(opt);
+    });
+    if(species.length <= 1){
+      speciesControl.hidden = true;
+    }else{
+      speciesControl.hidden = false;
+    }
+    if(species.length){
+      const active = getActiveSpecies();
+      speciesSelect.value = active?.id || species[0].id;
+    }
+  }
+
+  function updatePageControl(){
+    const pageControl = document.getElementById('pageControl');
+    const species = getActiveSpecies();
+    const pages = species?.pages || [];
+    pageSelect.innerHTML = '';
+    pages.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      pageSelect.appendChild(opt);
+    });
+    if(pages.length <= 1){
+      pageControl.hidden = true;
+    }else{
+      pageControl.hidden = false;
+    }
+    if(pages.length){
+      const active = getActivePage();
+      pageSelect.value = active?.id || pages[0].id;
+    }
+  }
+
+  function updateHighlights(weight){
+    document.querySelectorAll('table.weight-table').forEach(tbl=>{
+      tbl.querySelectorAll('th,td').forEach(cell=>cell.classList.remove('col-highlight'));
+      const th = tbl.querySelector(`thead th[data-w="${weight}"]`);
+      if(th) th.classList.add('col-highlight');
+      tbl.querySelectorAll(`tbody td[data-w="${weight}"]`).forEach(td=>td.classList.add('col-highlight'));
+    });
+  }
+
+  function insertionIndexForWeight(weight){
+    let countLE = 0;
+    for(const w of weights){ if(weight >= w) countLE++; }
+    return 1 + countLE;
+  }
+
+  function repositionActualAcrossTables(weight){
+    weightTables.forEach(tbl=> repositionActualForTable(tbl, weight));
+  }
+
+  function repositionActualForTable(tbl, weight){
+    const theadRow = tbl.tHead.rows[0];
+    const tbody = tbl.tBodies[0];
+    theadRow.querySelectorAll('th.actual-col').forEach(el=>el.remove());
+    tbody.querySelectorAll('td.actual-col').forEach(el=>el.remove());
+
+    const insertIdx = insertionIndexForWeight(weight);
+    const thAct = document.createElement('th');
+    thAct.className = 'actual-col';
+    thAct.textContent = `[${weight.toFixed(1)} kg]`;
+    theadRow.insertBefore(thAct, theadRow.children[insertIdx] || null);
+
+    Array.from(tbody.rows).forEach(tr=>{
+      const td = document.createElement('td');
+      td.className = 'actual-col';
+      const amt = safeNumber(tr.dataset.amt);
+      const conc = tr.dataset.conc ? safeNumber(tr.dataset.conc) : undefined;
+      const rule = {
+        amt: amt === null ? NaN : amt,
+        unit: tr.dataset.unit,
+        conc: conc === null ? NaN : conc,
+        concUnit: tr.dataset.concu || undefined
+      };
+      const value = volFor(weight, rule);
+      const dp = Number(tr.dataset.dp || 2);
+      const rounding = tr.dataset.rounding || 'round';
+      td.textContent = formatDose(value, dp, rounding);
+      tr.insertBefore(td, tr.children[insertIdx] || null);
+    });
+  }
+
+  function initScrollSync(){
+    const scrollers = Array.from(document.querySelectorAll('.sync-scroll'));
+    let syncing = false;
+    scrollers.forEach(el=>{
+      el.addEventListener('scroll', ()=>{
+        if(syncing) return; syncing = true;
+        const x = el.scrollLeft;
+        scrollers.forEach(other=>{ if(other!==el) other.scrollLeft = x; });
+        requestAnimationFrame(()=>{ syncing = false; });
+      }, {passive:true});
+    });
+  }
+
+  function setEstimated(v){
+    state.ui.estimatedWeight = clampToStep(v, 20, 100, 5);
+    if(estSelect.value !== String(state.ui.estimatedWeight)){
+      estSelect.value = String(state.ui.estimatedWeight);
+    }
+    updateHighlights(state.ui.estimatedWeight);
+    repositionActualAcrossTables(state.ui.actualWeight);
+    saveUiState();
+  }
+
+  function syncActual(val){
+    const v = Math.max(1, Math.min(300, Number(val)));
+    state.ui.actualWeight = Number.isFinite(v) ? v : state.ui.actualWeight;
+    actInput.value = state.ui.actualWeight.toFixed(1);
+    repositionActualAcrossTables(state.ui.actualWeight);
+    saveUiState();
+  }
+
+  function toggleTrolleyPanel(){
+    state.ui.showTrolleyCalc = !state.ui.showTrolleyCalc;
+    trolleyPanel.hidden = !state.ui.showTrolleyCalc;
+    saveUiState();
+  }
+
+  function runTrolleyCalc(){
+    const trolley = safeNumber(trolleyWeight.value);
+    const combined = safeNumber(trolleyPlusWeight.value);
+    if(trolley === null || combined === null){
+      alert('Enter both trolley weights to calculate.');
+      return;
+    }
+    const result = Math.max(0, combined - trolley);
+    syncActual(result);
+  }
+
+  function clearTrolley(){
+    trolleyWeight.value = '';
+    trolleyPlusWeight.value = '';
+    state.ui.trolleyWeight = '';
+    state.ui.trolleyPlusWeight = '';
+    saveUiState();
+  }
+
+  function initControls(){
+    weights.forEach(w => {
+      const opt = document.createElement('option');
+      opt.value = String(w);
+      opt.textContent = `${w} kg`;
+      estSelect.appendChild(opt);
+    });
+
+    estSelect.addEventListener('change', (e) => setEstimated(Number(e.target.value)));
+    estSelect.addEventListener('input',  (e) => setEstimated(Number(e.target.value)));
+
+    actInput.addEventListener('focus', () => {requestAnimationFrame(() => actInput.select());});
+    ['mouseup','pointerup'].forEach(ev => actInput.addEventListener(ev, (e)=> e.preventDefault()));
+
+    applyBtn.addEventListener('click', ()=> syncActual(Number(actInput.value)) );
+    actInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); syncActual(Number(actInput.value)); }});
+
+    toggleTrolley.addEventListener('click', toggleTrolleyPanel);
+    toggleTrolley.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggleTrolleyPanel(); }});
+
+    calcTrolley.addEventListener('click', runTrolleyCalc);
+    clearTrolley.addEventListener('click', clearTrolley);
+
+    trolleyWeight.addEventListener('input', ()=>{ state.ui.trolleyWeight = trolleyWeight.value; saveUiState(); });
+    trolleyPlusWeight.addEventListener('input', ()=>{ state.ui.trolleyPlusWeight = trolleyPlusWeight.value; saveUiState(); });
+
+    speciesSelect.addEventListener('change', ()=>{
+      state.ui.speciesId = speciesSelect.value;
+      state.ui.pageId = null;
+      saveUiState();
+      scheduleRender();
+    });
+
+    pageSelect.addEventListener('change', ()=>{
+      state.ui.pageId = pageSelect.value;
+      saveUiState();
+      scheduleRender();
+    });
+  }
+
+  async function init(){
+    state.defaults = await loadDefaults();
+
+    state.teamData = loadJson(KEYS.teamData, null);
+    state.personalData = loadJson(KEYS.personalData, { version: 1, sections: {} });
+    const savedUi = loadJson(KEYS.ui, {});
+
+    state.ui.estimatedWeight = savedUi.estimatedWeight ?? 20;
+    state.ui.actualWeight = savedUi.actualWeight ?? 30.0;
+    state.ui.speciesId = savedUi.speciesId ?? null;
+    state.ui.pageId = savedUi.pageId ?? null;
+    state.ui.showTrolleyCalc = savedUi.showTrolleyCalc ?? false;
+    state.ui.trolleyWeight = savedUi.trolleyWeight ?? '';
+    state.ui.trolleyPlusWeight = savedUi.trolleyPlusWeight ?? '';
+    state.ui.rememberOwner = savedUi.rememberOwner ?? false;
+
+    state.ui.teamId = storage.get(KEYS.teamId) || '';
+    state.ui.personalId = storage.get(KEYS.personalId) || newId('person');
+    storage.set(KEYS.personalId, state.ui.personalId);
+
+    const urlTeam = getTeamParam();
+    if(urlTeam){
+      state.ui.teamId = sanitizeId(urlTeam);
+      storage.set(KEYS.teamId, state.ui.teamId);
+    }
+
+    if(state.ui.rememberOwner){
+      const savedHash = storage.get(KEYS.ownerHash);
+      if(savedHash && state.teamData?.ownerPasswordHash && savedHash === state.teamData.ownerPasswordHash){
+        state.ui.ownerAuthorized = true;
+      }
+    }
+
+    initControls();
+
+    estSelect.value = String(state.ui.estimatedWeight);
+    actInput.value = Number(state.ui.actualWeight).toFixed(1);
+    trolleyPanel.hidden = !state.ui.showTrolleyCalc;
+    trolleyWeight.value = state.ui.trolleyWeight;
+    trolleyPlusWeight.value = state.ui.trolleyPlusWeight;
+
+    renderApp();
+    await initFirebase();
+
+    if(state.ui.teamId && state.sync.firebaseAvailable){
+      await startTeamSync(state.ui.teamId);
+      if(state.ui.personalId){
+        await startPersonalSync(state.ui.teamId, state.ui.personalId);
+      }
+    }
+
+  }
+
+  init();
+</script>
+</body>
+</html>

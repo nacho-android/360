@@ -1,0 +1,461 @@
+{
+  "version": 1,
+  "ownerPasswordHash": "",
+  "species": [
+    {
+      "id": "pig",
+      "name": "Pig",
+      "pages": [
+        {
+          "id": "main",
+          "name": "Main",
+          "sections": [
+            {
+              "id": "im-minor",
+              "type": "dose-table",
+              "title": "IM Sedation for Minor Procedures",
+              "note": "",
+              "unitLabel": "mL",
+              "scope": "team",
+              "rows": [
+                {
+                  "id": "midazolam-im-minor",
+                  "drug": "Midazolam",
+                  "spec": "0.4 mg/kg (5 mg/mL)",
+                  "rule": { "amt": 0.4, "unit": "mg_per_kg", "conc": 5, "concUnit": "mg_per_ml" },
+                  "dp": 2,
+                  "rounding": "round"
+                },
+                {
+                  "id": "butorphanol-im-minor",
+                  "drug": "Butorphanol",
+                  "spec": "0.1 mg/kg (10 mg/mL)",
+                  "rule": { "amt": 0.1, "unit": "mg_per_kg", "conc": 10, "concUnit": "mg_per_ml" },
+                  "dp": 2,
+                  "rounding": "round"
+                },
+                {
+                  "id": "medetomidine-im-minor",
+                  "drug": "Medetomidine",
+                  "spec": "0.02 mg/kg (1 mg/mL)",
+                  "rule": { "amt": 0.02, "unit": "mg_per_kg", "conc": 1, "concUnit": "mg_per_ml" },
+                  "dp": 2,
+                  "rounding": "round"
+                }
+              ]
+            },
+            {
+              "id": "im-reversal",
+              "type": "dose-table",
+              "title": "IM Reversal",
+              "note": "Use 2–4× the medetomidine dose",
+              "unitLabel": "mL",
+              "scope": "team",
+              "rows": [
+                {
+                  "id": "atipamezole-2x",
+                  "drug": "Atipamezole [2×]",
+                  "spec": "0.04 mg/kg (5 mg/mL)",
+                  "rule": { "amt": 0.04, "unit": "mg_per_kg", "conc": 5, "concUnit": "mg_per_ml" },
+                  "dp": 2,
+                  "rounding": "round"
+                },
+                {
+                  "id": "atipamezole-3x",
+                  "drug": "Atipamezole [3×]",
+                  "spec": "0.06 mg/kg (5 mg/mL)",
+                  "rule": { "amt": 0.06, "unit": "mg_per_kg", "conc": 5, "concUnit": "mg_per_ml" },
+                  "dp": 2,
+                  "rounding": "round"
+                },
+                {
+                  "id": "atipamezole-4x",
+                  "drug": "Atipamezole [4×]",
+                  "spec": "0.08 mg/kg (5 mg/mL)",
+                  "rule": { "amt": 0.08, "unit": "mg_per_kg", "conc": 5, "concUnit": "mg_per_ml" },
+                  "dp": 2,
+                  "rounding": "round"
+                }
+              ]
+            },
+            {
+              "id": "im-premed",
+              "type": "dose-table",
+              "title": "IM Premedication for Longer Procedures",
+              "note": "",
+              "unitLabel": "mL",
+              "scope": "team",
+              "rows": [
+                {
+                  "id": "midazolam-im-premed",
+                  "drug": "Midazolam",
+                  "spec": "0.4 mg/kg (5 mg/mL)",
+                  "rule": { "amt": 0.4, "unit": "mg_per_kg", "conc": 5, "concUnit": "mg_per_ml" },
+                  "dp": 2,
+                  "rounding": "round"
+                },
+                {
+                  "id": "ketamine-im-premed",
+                  "drug": "Ketamine",
+                  "spec": "8 mg/kg (100 mg/mL)",
+                  "rule": { "amt": 8, "unit": "mg_per_kg", "conc": 100, "concUnit": "mg_per_ml" },
+                  "dp": 1,
+                  "rounding": "round"
+                },
+                {
+                  "id": "medetomidine-im-premed",
+                  "drug": "Medetomidine",
+                  "spec": "0.01 mg/kg (1 mg/mL)",
+                  "rule": { "amt": 0.01, "unit": "mg_per_kg", "conc": 1, "concUnit": "mg_per_ml" },
+                  "dp": 2,
+                  "rounding": "round"
+                }
+              ]
+            },
+            {
+              "id": "iv-bolus",
+              "type": "dose-table",
+              "title": "IV Boluses / Induction",
+              "note": "",
+              "unitLabel": "mL",
+              "scope": "team",
+              "rows": [
+                {
+                  "id": "methadone-iv-bolus",
+                  "drug": "Methadone",
+                  "spec": "0.3 mg/kg (10 mg/mL)",
+                  "rule": { "amt": 0.3, "unit": "mg_per_kg", "conc": 10, "concUnit": "mg_per_ml" },
+                  "dp": 2,
+                  "rounding": "round"
+                },
+                {
+                  "id": "fentanyl-iv-bolus",
+                  "drug": "Fentanyl",
+                  "spec": "5 µg/kg (50 µg/mL)",
+                  "rule": { "amt": 5, "unit": "ug_per_kg", "conc": 50, "concUnit": "ug_per_ml" },
+                  "dp": 1,
+                  "rounding": "round"
+                },
+                {
+                  "id": "propofol-iv-bolus",
+                  "drug": "Propofol",
+                  "spec": "1 mg/kg (10 mg/mL)",
+                  "rule": { "amt": 1, "unit": "mg_per_kg", "conc": 10, "concUnit": "mg_per_ml" },
+                  "dp": 0,
+                  "rounding": "round"
+                }
+              ]
+            },
+            {
+              "id": "tiva-propofol",
+              "type": "dose-table",
+              "title": "TIVA — Propofol (10 mg/mL)",
+              "note": "",
+              "unitLabel": "mL/h",
+              "scope": "team",
+              "rows": [
+                {
+                  "id": "tiva-prop-4",
+                  "drug": "4 mg/kg/h",
+                  "spec": "",
+                  "rule": { "amt": 4, "unit": "mg_per_kg_per_h", "conc": 10, "concUnit": "mg_per_ml" },
+                  "dp": 0,
+                  "rounding": "round"
+                },
+                {
+                  "id": "tiva-prop-5",
+                  "drug": "5 mg/kg/h",
+                  "spec": "",
+                  "rule": { "amt": 5, "unit": "mg_per_kg_per_h", "conc": 10, "concUnit": "mg_per_ml" },
+                  "dp": 0,
+                  "rounding": "round"
+                },
+                {
+                  "id": "tiva-prop-6",
+                  "drug": "6 mg/kg/h",
+                  "spec": "",
+                  "rule": { "amt": 6, "unit": "mg_per_kg_per_h", "conc": 10, "concUnit": "mg_per_ml" },
+                  "dp": 0,
+                  "rounding": "round"
+                }
+              ]
+            },
+            {
+              "id": "tiva-midazolam",
+              "type": "dose-table",
+              "title": "TIVA — Midazolam (1 mg/mL)",
+              "note": "",
+              "unitLabel": "mL/h",
+              "scope": "team",
+              "rows": [
+                {
+                  "id": "tiva-mid-0.1",
+                  "drug": "0.1 mg/kg/h",
+                  "spec": "",
+                  "rule": { "amt": 0.1, "unit": "mg_per_kg_per_h", "conc": 1, "concUnit": "mg_per_ml" },
+                  "dp": 1,
+                  "rounding": "round"
+                },
+                {
+                  "id": "tiva-mid-0.2",
+                  "drug": "0.2 mg/kg/h",
+                  "spec": "",
+                  "rule": { "amt": 0.2, "unit": "mg_per_kg_per_h", "conc": 1, "concUnit": "mg_per_ml" },
+                  "dp": 1,
+                  "rounding": "round"
+                },
+                {
+                  "id": "tiva-mid-0.3",
+                  "drug": "0.3 mg/kg/h",
+                  "spec": "",
+                  "rule": { "amt": 0.3, "unit": "mg_per_kg_per_h", "conc": 1, "concUnit": "mg_per_ml" },
+                  "dp": 1,
+                  "rounding": "round"
+                },
+                {
+                  "id": "tiva-mid-0.4",
+                  "drug": "0.4 mg/kg/h",
+                  "spec": "",
+                  "rule": { "amt": 0.4, "unit": "mg_per_kg_per_h", "conc": 1, "concUnit": "mg_per_ml" },
+                  "dp": 1,
+                  "rounding": "round"
+                }
+              ]
+            },
+            {
+              "id": "tiva-fentanyl",
+              "type": "dose-table",
+              "title": "TIVA — Fentanyl (50 µg/mL)",
+              "note": "",
+              "unitLabel": "mL/h",
+              "scope": "team",
+              "rows": [
+                {
+                  "id": "tiva-fent-1",
+                  "drug": "1 µg/kg/h",
+                  "spec": "",
+                  "rule": { "amt": 1, "unit": "ug_per_kg_per_h", "conc": 50, "concUnit": "ug_per_ml" },
+                  "dp": 1,
+                  "rounding": "round"
+                },
+                {
+                  "id": "tiva-fent-2",
+                  "drug": "2 µg/kg/h",
+                  "spec": "",
+                  "rule": { "amt": 2, "unit": "ug_per_kg_per_h", "conc": 50, "concUnit": "ug_per_ml" },
+                  "dp": 1,
+                  "rounding": "round"
+                },
+                {
+                  "id": "tiva-fent-5",
+                  "drug": "5 µg/kg/h",
+                  "spec": "",
+                  "rule": { "amt": 5, "unit": "ug_per_kg_per_h", "conc": 50, "concUnit": "ug_per_ml" },
+                  "dp": 1,
+                  "rounding": "round"
+                },
+                {
+                  "id": "tiva-fent-10",
+                  "drug": "10 µg/kg/h",
+                  "spec": "",
+                  "rule": { "amt": 10, "unit": "ug_per_kg_per_h", "conc": 50, "concUnit": "ug_per_ml" },
+                  "dp": 1,
+                  "rounding": "round"
+                },
+                {
+                  "id": "tiva-fent-15",
+                  "drug": "15 µg/kg/h",
+                  "spec": "",
+                  "rule": { "amt": 15, "unit": "ug_per_kg_per_h", "conc": 50, "concUnit": "ug_per_ml" },
+                  "dp": 1,
+                  "rounding": "round"
+                }
+              ]
+            },
+            {
+              "id": "other",
+              "type": "dose-table",
+              "title": "Other",
+              "note": "",
+              "unitLabel": "mL",
+              "scope": "team",
+              "rows": [
+                {
+                  "id": "buprenorphine",
+                  "drug": "Buprenorphine",
+                  "spec": "0.02 mg/kg (0.3 mg/mL)",
+                  "rule": { "amt": 0.02, "unit": "mg_per_kg", "conc": 0.3, "concUnit": "mg_per_ml" },
+                  "dp": 2,
+                  "rounding": "round"
+                },
+                {
+                  "id": "cefazolin",
+                  "drug": "Cefazolin",
+                  "spec": "22 mg/kg (100 mg/mL)",
+                  "rule": { "amt": 22, "unit": "mg_per_kg", "conc": 100, "concUnit": "mg_per_ml" },
+                  "dp": 1,
+                  "rounding": "round"
+                },
+                {
+                  "id": "meloxicam",
+                  "drug": "Meloxicam",
+                  "spec": "0.4 mg/kg (20 mg/mL)",
+                  "rule": { "amt": 0.4, "unit": "mg_per_kg", "conc": 20, "concUnit": "mg_per_ml" },
+                  "dp": 2,
+                  "rounding": "round"
+                },
+                {
+                  "id": "saline-4",
+                  "drug": "Saline",
+                  "spec": "4 mL/kg/h",
+                  "rule": { "amt": 4, "unit": "ml_per_kg" },
+                  "dp": 0,
+                  "rounding": "round"
+                },
+                {
+                  "id": "saline-5",
+                  "drug": "Saline",
+                  "spec": "5 mL/kg/h",
+                  "rule": { "amt": 5, "unit": "ml_per_kg" },
+                  "dp": 0,
+                  "rounding": "round"
+                },
+                {
+                  "id": "saline-6",
+                  "drug": "Saline",
+                  "spec": "6 mL/kg/h",
+                  "rule": { "amt": 6, "unit": "ml_per_kg" },
+                  "dp": 0,
+                  "rounding": "round"
+                }
+              ]
+            },
+            {
+              "id": "local-anaesthetics",
+              "type": "dose-table",
+              "title": "Local Anaesthetics - Topical / Injection",
+              "note": "",
+              "unitLabel": "mL",
+              "scope": "team",
+              "rows": [
+                {
+                  "id": "lignocaine",
+                  "drug": "Lignocaine",
+                  "spec": "2 mg/kg (20 mg/mL)",
+                  "rule": { "amt": 2, "unit": "mg_per_kg", "conc": 20, "concUnit": "mg_per_ml" },
+                  "dp": 1,
+                  "rounding": "round"
+                },
+                {
+                  "id": "bupivacaine",
+                  "drug": "Bupivacaine",
+                  "spec": "1 mg/kg (5 mg/mL)",
+                  "rule": { "amt": 1, "unit": "mg_per_kg", "conc": 5, "concUnit": "mg_per_ml" },
+                  "dp": 1,
+                  "rounding": "round"
+                }
+              ]
+            },
+            {
+              "id": "misc-intravenous",
+              "type": "misc-table",
+              "title": "Miscellaneous Intravenous Drug Doses",
+              "note": "",
+              "unitLabel": "",
+              "scope": "team",
+              "rows": [
+                {
+                  "id": "heparin",
+                  "drug": "Heparin",
+                  "initial": "5,000 IU bolus",
+                  "maintenance": "Repeat 2,000 IU after 1 h, then 1,000 IU hourly (Target ACT 250–300 s)"
+                },
+                {
+                  "id": "metaraminol",
+                  "drug": "Metaraminol (0.5 mg/mL)",
+                  "initial": "0.5–1 mL bolus",
+                  "maintenance": "Repeat as required; wait 1–2 min between boluses"
+                },
+                {
+                  "id": "adrenaline",
+                  "drug": "Adrenaline 1:20k (0.05 mg/ml)",
+                  "initial": "10–20 mL (or 0.01 mg/kg) bolus",
+                  "maintenance": "Repeat every 3-5 min, as required"
+                },
+                {
+                  "id": "atropine",
+                  "drug": "Atropine",
+                  "initial": "600 µg bolus",
+                  "maintenance": "As required"
+                },
+                {
+                  "id": "amiodarone",
+                  "drug": "Amiodarone (3 mg/mL in 5% glucose)",
+                  "initial": "150 mg (or 5 mg/kg) over 30 min",
+                  "maintenance": "As required"
+                },
+                {
+                  "id": "lignocaine-misc",
+                  "drug": "Lignocaine",
+                  "initial": "100 mg (or 3 mg/kg) slowly",
+                  "maintenance": "30–60 mg/h (or 1–2 mg/kg/h)"
+                },
+                {
+                  "id": "metoprolol",
+                  "drug": "Metoprolol",
+                  "initial": "1 mg slowly",
+                  "maintenance": "As required"
+                }
+              ]
+            },
+            {
+              "id": "isoprenaline",
+              "type": "rate-table",
+              "title": "Isoprenaline - Programmed Stimulation",
+              "note": "Add 1 ml (200 µg) isoprenaline to 79 ml 5% glucose to make 2.5 µg/ml. Administer bolus then continue as CRI. Suggested starting bolus/infusion rate 5 µg(/min).",
+              "unitLabel": "mL/h",
+              "scope": "team",
+              "columns": ["Drug", "1.25 µg/min", "2.5 µg/min", "5 µg/min", "7.5 µg/min", "10 µg/min"],
+              "rows": [
+                {
+                  "id": "isoprenaline-row",
+                  "drug": "Isoprenaline",
+                  "spec": "(2.5 µg/mL)",
+                  "concUgPerMl": 2.5,
+                  "rates": [1.25, 2.5, 5, 7.5, 10],
+                  "dp": 0,
+                  "rounding": "round"
+                }
+              ]
+            },
+            {
+              "id": "custom",
+              "type": "custom-table",
+              "title": "Custom",
+              "note": "",
+              "unitLabel": "mL",
+              "scope": "personal"
+            },
+            {
+              "id": "notes",
+              "type": "notes",
+              "title": "Notes",
+              "note": "",
+              "unitLabel": "",
+              "scope": "personal"
+            },
+            {
+              "id": "about",
+              "type": "text-block",
+              "title": "About",
+              "text": "Created by Alan Marcus - Version 20251028_1256",
+              "textSize": 14,
+              "background": "#ffffff",
+              "scope": "team"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
