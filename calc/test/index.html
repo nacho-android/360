@@ -520,21 +520,21 @@
   }
 
   function getActiveSpecies(){
-    if(!state.teamData?.species?.length) return null;
+    if(!state.teamData || !state.teamData.species || !state.teamData.species.length) return null;
     const id = state.ui.speciesId || state.teamData.species[0].id;
     return state.teamData.species.find(s => s.id === id) || state.teamData.species[0];
   }
 
   function getActivePage(){
     const species = getActiveSpecies();
-    if(!species?.pages?.length) return null;
+    if(!species || !species.pages || !species.pages.length) return null;
     const id = state.ui.pageId || species.pages[0].id;
     return species.pages.find(p => p.id === id) || species.pages[0];
   }
 
   function shouldShowWelcome(){
     const hasTeamData = !!(state.teamData && state.teamData.species && state.teamData.species.length);
-    return !hasTeamData && !state.ui.teamId && !getTeamParam();
+    return !hasTeamData && !normalizeId(state.ui.teamId) && !normalizeId(getTeamParam());
   }
 
   function getTeamParam(){
@@ -641,6 +641,12 @@
     return String(id||'').trim().replace(/[.#$\[\]]/g,'-');
   }
 
+  function normalizeId(value){
+    const trimmed = String(value || '').trim();
+    if(!trimmed || trimmed === 'null' || trimmed === 'undefined') return '';
+    return sanitizeId(trimmed);
+  }
+
   function teamPath(id){
     return `dosecalc/v2/team/${id}`;
   }
@@ -684,7 +690,7 @@
   }
 
   function applyTeamPayload(payload, {source}){
-    if(!payload?.data) return;
+    if(!payload || !payload.data) return;
     const updatedAt = Date.parse(payload.updatedAt || 0);
     if(updatedAt && updatedAt <= state.sync.lastTeamAt) return;
     state.sync.lastTeamAt = updatedAt || Date.now();
@@ -757,7 +763,7 @@
   }
 
   function applyPersonalPayload(payload, {source}){
-    if(!payload?.data) return;
+    if(!payload || !payload.data) return;
     const updatedAt = Date.parse(payload.updatedAt || 0);
     if(updatedAt && updatedAt <= state.sync.lastPersonalAt) return;
     state.sync.lastPersonalAt = updatedAt || Date.now();
@@ -848,11 +854,11 @@
     const tbody = document.createElement('tbody');
     (section.rows || []).forEach(row=>{
       const tr = document.createElement('tr');
-      tr.dataset.amt = String(row.rule?.amt ?? '');
-      tr.dataset.unit = row.rule?.unit || '';
-      if(row.rule?.conc !== undefined){ tr.dataset.conc = String(row.rule.conc); }
-      if(row.rule?.concUnit){ tr.dataset.concu = row.rule.concUnit; }
-      tr.dataset.dp = row.dp ?? 2;
+      tr.dataset.amt = String(row.rule && row.rule.amt !== undefined ? row.rule.amt : '');
+      tr.dataset.unit = row.rule && row.rule.unit ? row.rule.unit : '';
+      if(row.rule && row.rule.conc !== undefined){ tr.dataset.conc = String(row.rule.conc); }
+      if(row.rule && row.rule.concUnit){ tr.dataset.concu = row.rule.concUnit; }
+      tr.dataset.dp = row.dp !== undefined && row.dp !== null ? row.dp : 2;
       tr.dataset.rounding = row.rounding || 'round';
       tr.dataset.drugLabel = row.drug;
 
@@ -939,7 +945,8 @@
       (row.rates || []).forEach(rate=>{
         const td = document.createElement('td');
         const mlPerH = conc ? (Number(rate) * 60 / conc) : NaN;
-        td.textContent = formatDose(mlPerH, row.dp ?? 0, row.rounding || 'round');
+        const dp = row.dp !== undefined && row.dp !== null ? row.dp : 0;
+        td.textContent = formatDose(mlPerH, dp, row.rounding || 'round');
         tr.appendChild(td);
       });
       tbody.appendChild(tr);
@@ -1005,7 +1012,7 @@
     tr.dataset.unit = 'mg_per_kg';
     tr.dataset.conc = row.mgml || '';
     tr.dataset.concu = 'mg_per_ml';
-    tr.dataset.dp = row.dp ?? 2;
+    tr.dataset.dp = row.dp !== undefined && row.dp !== null ? row.dp : 2;
     tr.dataset.rounding = row.rounding || 'round';
 
     const td = document.createElement('td');
@@ -1072,7 +1079,7 @@
     dpInput.type = 'number';
     dpInput.min = '0';
     dpInput.max = '4';
-    dpInput.value = row.dp ?? 2;
+    dpInput.value = row.dp !== undefined && row.dp !== null ? row.dp : 2;
     dpInput.addEventListener('change', ()=>{
       row.dp = Number(dpInput.value || 2);
       tr.dataset.dp = row.dp;
@@ -1132,13 +1139,13 @@
     weights.forEach(w=>{
       const tdw = document.createElement('td');
       const rule = {
-        amt: safeNumber(row.mgkg) ?? NaN,
+        amt: safeNumber(row.mgkg) !== null ? safeNumber(row.mgkg) : NaN,
         unit: 'mg_per_kg',
-        conc: safeNumber(row.mgml) ?? NaN,
+        conc: safeNumber(row.mgml) !== null ? safeNumber(row.mgml) : NaN,
         concUnit: 'mg_per_ml'
       };
       const val = volFor(w, rule);
-      const dp = row.dp ?? 2;
+      const dp = row.dp !== undefined && row.dp !== null ? row.dp : 2;
       const rounding = row.rounding || 'round';
       tdw.textContent = formatDose(val, dp, rounding);
       tdw.dataset.w = String(w);
@@ -1243,7 +1250,7 @@
   function buildSectionDetails(section, index, total){
     const details = document.createElement('details');
     details.id = section.id;
-    details.open = (storage.get('open:'+section.id) ?? '1') === '1';
+    details.open = (storage.get('open:'+section.id) || '1') === '1';
     details.addEventListener('toggle', ()=> storage.set('open:'+section.id, details.open ? '1' : '0'));
 
     const summary = document.createElement('summary');
@@ -1514,7 +1521,7 @@
         spec.addEventListener('change', ()=>{ row.spec = spec.value; saveTeamData(); });
 
         const amt = document.createElement('input');
-        amt.value = row.rule?.amt ?? '';
+        amt.value = row.rule && row.rule.amt !== undefined ? row.rule.amt : '';
         amt.placeholder = 'Dose';
         amt.addEventListener('change', ()=>{ row.rule = row.rule || {}; row.rule.amt = Number(amt.value); saveTeamData(); });
 
@@ -1523,13 +1530,13 @@
           const opt = document.createElement('option');
           opt.value = u;
           opt.textContent = u.replace(/_/g, ' ');
-          if(row.rule?.unit === u) opt.selected = true;
+          if(row.rule && row.rule.unit === u) opt.selected = true;
           unit.appendChild(opt);
         });
         unit.addEventListener('change', ()=>{ row.rule = row.rule || {}; row.rule.unit = unit.value; saveTeamData(); });
 
         const conc = document.createElement('input');
-        conc.value = row.rule?.conc ?? '';
+        conc.value = row.rule && row.rule.conc !== undefined ? row.rule.conc : '';
         conc.placeholder = 'Conc';
         conc.addEventListener('change', ()=>{ row.rule = row.rule || {}; row.rule.conc = Number(conc.value); saveTeamData(); });
 
@@ -1538,7 +1545,7 @@
           const opt = document.createElement('option');
           opt.value = cu;
           opt.textContent = cu.replace(/_/g, ' ');
-          if(row.rule?.concUnit === cu) opt.selected = true;
+          if(row.rule && row.rule.concUnit === cu) opt.selected = true;
           concUnit.appendChild(opt);
         });
         concUnit.addEventListener('change', ()=>{ row.rule = row.rule || {}; row.rule.concUnit = concUnit.value; saveTeamData(); });
@@ -1547,7 +1554,7 @@
         dp.type = 'number';
         dp.min = '0';
         dp.max = '4';
-        dp.value = row.dp ?? 2;
+        dp.value = row.dp !== undefined && row.dp !== null ? row.dp : 2;
         dp.addEventListener('change', ()=>{ row.dp = Number(dp.value || 2); saveTeamData(); });
 
         const rounding = document.createElement('select');
@@ -1679,7 +1686,7 @@
         spec.addEventListener('change', ()=>{ row.spec = spec.value; saveTeamData(); });
 
         const conc = document.createElement('input');
-        conc.value = row.concUgPerMl ?? '';
+        conc.value = row.concUgPerMl !== undefined && row.concUgPerMl !== null ? row.concUgPerMl : '';
         conc.placeholder = 'Conc (µg/mL)';
         conc.addEventListener('change', ()=>{ row.concUgPerMl = Number(conc.value); saveTeamData(); });
 
@@ -1695,7 +1702,7 @@
         dp.type = 'number';
         dp.min = '0';
         dp.max = '4';
-        dp.value = row.dp ?? 0;
+        dp.value = row.dp !== undefined && row.dp !== null ? row.dp : 0;
         dp.addEventListener('change', ()=>{ row.dp = Number(dp.value || 0); saveTeamData(); });
 
         const rounding = document.createElement('select');
@@ -1815,7 +1822,7 @@
   function renderSyncSection(){
     const details = document.createElement('details');
     details.id = 'cloud-sync';
-    details.open = (storage.get('open:cloud-sync') ?? '1') === '1';
+    details.open = (storage.get('open:cloud-sync') || '1') === '1';
     details.addEventListener('toggle', ()=> storage.set('open:cloud-sync', details.open ? '1' : '0'));
 
     const summary = document.createElement('summary');
@@ -1887,7 +1894,7 @@
 
     const passInput = document.createElement('input');
     passInput.type = 'password';
-    passInput.placeholder = state.teamData?.ownerPasswordHash ? 'Enter password' : 'Set new password';
+    passInput.placeholder = state.teamData && state.teamData.ownerPasswordHash ? 'Enter password' : 'Set new password';
 
     const remember = document.createElement('label');
     const rememberBox = document.createElement('input');
@@ -1902,7 +1909,7 @@
 
     const passBtn = document.createElement('button');
     passBtn.className = 'btn';
-    passBtn.textContent = state.teamData?.ownerPasswordHash ? 'Verify' : 'Set password';
+    passBtn.textContent = state.teamData && state.teamData.ownerPasswordHash ? 'Verify' : 'Set password';
     passBtn.addEventListener('click', async ()=>{
       const entered = passInput.value.trim();
       if(!entered){
@@ -1911,7 +1918,7 @@
         return;
       }
       const hash = await hashPassword(entered);
-      if(state.teamData?.ownerPasswordHash){
+      if(state.teamData && state.teamData.ownerPasswordHash){
         if(hash === state.teamData.ownerPasswordHash){
           state.ui.ownerAuthorized = true;
           if(state.ui.rememberOwner){
@@ -2176,7 +2183,7 @@
 
   function updateSpeciesControl(){
     const speciesControl = document.getElementById('speciesControl');
-    const species = state.teamData?.species || [];
+    const species = state.teamData && state.teamData.species ? state.teamData.species : [];
     speciesSelect.innerHTML = '';
     species.forEach(s => {
       const opt = document.createElement('option');
@@ -2191,14 +2198,14 @@
     }
     if(species.length){
       const active = getActiveSpecies();
-      speciesSelect.value = active?.id || species[0].id;
+      speciesSelect.value = active && active.id ? active.id : species[0].id;
     }
   }
 
   function updatePageControl(){
     const pageControl = document.getElementById('pageControl');
     const species = getActiveSpecies();
-    const pages = species?.pages || [];
+    const pages = species && species.pages ? species.pages : [];
     pageSelect.innerHTML = '';
     pages.forEach(p => {
       const opt = document.createElement('option');
@@ -2213,7 +2220,7 @@
     }
     if(pages.length){
       const active = getActivePage();
-      pageSelect.value = active?.id || pages[0].id;
+      pageSelect.value = active && active.id ? active.id : pages[0].id;
     }
   }
 
@@ -2370,28 +2377,28 @@
     state.personalData = loadJson(KEYS.personalData, { version: 1, sections: {} });
     const savedUi = loadJson(KEYS.ui, {});
 
-    state.ui.estimatedWeight = savedUi.estimatedWeight ?? 20;
-    state.ui.actualWeight = savedUi.actualWeight ?? 30.0;
-    state.ui.speciesId = savedUi.speciesId ?? null;
-    state.ui.pageId = savedUi.pageId ?? null;
-    state.ui.showTrolleyCalc = savedUi.showTrolleyCalc ?? false;
-    state.ui.trolleyWeight = savedUi.trolleyWeight ?? '';
-    state.ui.trolleyPlusWeight = savedUi.trolleyPlusWeight ?? '';
-    state.ui.rememberOwner = savedUi.rememberOwner ?? false;
+    state.ui.estimatedWeight = Object.prototype.hasOwnProperty.call(savedUi, 'estimatedWeight') ? savedUi.estimatedWeight : 20;
+    state.ui.actualWeight = Object.prototype.hasOwnProperty.call(savedUi, 'actualWeight') ? savedUi.actualWeight : 30.0;
+    state.ui.speciesId = Object.prototype.hasOwnProperty.call(savedUi, 'speciesId') ? savedUi.speciesId : null;
+    state.ui.pageId = Object.prototype.hasOwnProperty.call(savedUi, 'pageId') ? savedUi.pageId : null;
+    state.ui.showTrolleyCalc = Object.prototype.hasOwnProperty.call(savedUi, 'showTrolleyCalc') ? savedUi.showTrolleyCalc : false;
+    state.ui.trolleyWeight = Object.prototype.hasOwnProperty.call(savedUi, 'trolleyWeight') ? savedUi.trolleyWeight : '';
+    state.ui.trolleyPlusWeight = Object.prototype.hasOwnProperty.call(savedUi, 'trolleyPlusWeight') ? savedUi.trolleyPlusWeight : '';
+    state.ui.rememberOwner = Object.prototype.hasOwnProperty.call(savedUi, 'rememberOwner') ? savedUi.rememberOwner : false;
 
-    state.ui.teamId = storage.get(KEYS.teamId) || '';
-    state.ui.personalId = storage.get(KEYS.personalId) || newId('person');
+    state.ui.teamId = normalizeId(storage.get(KEYS.teamId));
+    state.ui.personalId = normalizeId(storage.get(KEYS.personalId)) || newId('person');
     storage.set(KEYS.personalId, state.ui.personalId);
 
     const urlTeam = getTeamParam();
     if(urlTeam){
-      state.ui.teamId = sanitizeId(urlTeam);
+      state.ui.teamId = normalizeId(urlTeam);
       storage.set(KEYS.teamId, state.ui.teamId);
     }
 
     if(state.ui.rememberOwner){
       const savedHash = storage.get(KEYS.ownerHash);
-      if(savedHash && state.teamData?.ownerPasswordHash && savedHash === state.teamData.ownerPasswordHash){
+      if(savedHash && state.teamData && state.teamData.ownerPasswordHash && savedHash === state.teamData.ownerPasswordHash){
         state.ui.ownerAuthorized = true;
       }
     }
