@@ -372,7 +372,13 @@
     details.addEventListener('toggle', ()=> storage.set('open:'+sectionId, details.open ? '1' : '0'));
 
     const summary = document.createElement('summary');
-    summary.innerHTML = `<span>${title}</span><span class="meta"></span>`;
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'section-title';
+    titleSpan.textContent = title;
+    const metaSpan = document.createElement('span');
+    metaSpan.className = 'meta';
+    summary.appendChild(titleSpan);
+    summary.appendChild(metaSpan);
     details.appendChild(summary);
 
     const wrap = document.createElement('div');
@@ -998,7 +1004,7 @@
     const thead = document.createElement('thead');
     const trh = document.createElement('tr');
     const th = document.createElement('th');
-    th.textContent = 'Created by Alan Marcus - Version 20260213_1438';
+    th.textContent = 'Created by Alan Marcus - Version 20260213_1509';
     th.style.fontWeight = 'normal'; // not bold
     trh.appendChild(th); thead.appendChild(trh); table.appendChild(thead);
 
@@ -1037,6 +1043,16 @@
   /******************** Dose updates ********************/
   function updateDoseTables(){
     const weightG = currentWeightG();
+
+    // Update Drugs section title
+    const drugsDetails = document.getElementById('p5-drugs');
+    if(drugsDetails){
+      const titleEl = drugsDetails.querySelector('summary .section-title');
+      if(titleEl){
+        const wtxt = (weightG === null) ? 'xxx.x' : Number(weightG).toFixed(1);
+        titleEl.textContent = `Doses for ${wtxt} g rat`;
+      }
+    }
 
     // Drugs table rows
     const drugsTbl = document.getElementById('tbl-p5-drugs');
