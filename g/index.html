@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#101829" />
+    <title>Alan: Campus of Controlled Chaos</title>
+    <meta
+      name="description"
+      content="A funny, warm, mobile-friendly isometric campus adventure about research vet Alan surviving science chaos with style."
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="loadingScreen" class="overlayScreen loading visible">
+      <div class="panel heroPanel">
+        <div class="eyebrow">Premium-ish indie browser game</div>
+        <h1>Alan: Campus of Controlled Chaos</h1>
+        <p>
+          A stylized 2.5D mobile web adventure about a research veterinarian, suspiciously organized rats,
+          heroic coffee logistics, and a turtle with narrative authority.
+        </p>
+        <div class="loadingBar"><span></span></div>
+      </div>
+    </div>
+
+    <main id="appShell">
+      <canvas id="gameCanvas" aria-label="Game canvas"></canvas>
+
+      <section id="hud">
+        <div class="hudTopRow">
+          <div class="chipStack left">
+            <div id="locationChip" class="chip large">Location</div>
+            <div id="chapterChip" class="chip accent">Chapter</div>
+          </div>
+          <div class="chipStack right">
+            <button id="fullscreenBtn" class="iconButton" aria-label="Toggle fullscreen">⛶</button>
+          </div>
+        </div>
+
+        <div class="questPanel glass">
+          <div class="label">Current objective</div>
+          <div id="questText" class="questText">Talk to James in the courtyard.</div>
+          <div id="compassText" class="compassText">Guidance</div>
+        </div>
+
+        <div class="statusRow glass">
+          <div class="energyWrap">
+            <div class="label">Energy</div>
+            <div class="energyBar"><span id="energyFill"></span></div>
+            <div id="energyText" class="energyText">100 / 100 energy</div>
+          </div>
+          <div id="inventoryChips" class="inventoryChips"></div>
+        </div>
+
+        <div id="achievementList" class="achievementRow"></div>
+      </section>
+
+      <section id="controls">
+        <div id="joystickBase" class="joystickBase" aria-label="Movement joystick">
+          <div class="joystickRing"></div>
+          <div id="joystickKnob" class="joystickKnob"></div>
+        </div>
+        <div class="actionCluster">
+          <button id="actionBtn" class="touchButton primary">TALK / REPAIR</button>
+          <button id="secondaryBtn" class="touchButton">SPRINT</button>
+          <button id="pauseBtn" class="touchButton alt">PAUSE</button>
+        </div>
+      </section>
+
+      <div id="toast" class="toast"></div>
+      <div id="minigameHint" class="minigameHint"></div>
+
+      <section id="dialogueBox" class="dialogueBox glass">
+        <div id="dialogueSpeaker" class="dialogueSpeaker">Speaker</div>
+        <div id="dialogueBody" class="dialogueBody">Dialogue text.</div>
+        <button id="dialogueAdvance" class="menuButton compact">Next</button>
+      </section>
+
+      <section id="choicePanel" class="choicePanel glass"></section>
+
+      <section id="chapterSplash" class="chapterSplash glass">
+        <div id="chapterSplashTitle" class="chapterSplashTitle">Chapter</div>
+        <div id="chapterSplashBody" class="chapterSplashBody">Flavor text</div>
+      </section>
+
+      <section id="mainMenu" class="overlayScreen visible">
+        <div class="panel heroPanel wide">
+          <div class="eyebrow">Stylized isometric science adventure</div>
+          <h1>Alan: Campus of Controlled Chaos</h1>
+          <p>
+            Solve campus crises, help eccentric researchers, charm sheep unions, inspect drones, dive into a
+            dream reef, and get home in one piece. Mostly.
+          </p>
+          <div class="buttonColumn">
+            <button id="newGameBtn" class="menuButton primary">New Game</button>
+            <button id="continueBtn" class="menuButton">Continue</button>
+            <button id="mainSettingsBtn" class="menuButton">Settings</button>
+            <button id="mainCreditsBtn" class="menuButton">Credits</button>
+          </div>
+          <div class="menuFooter">
+            Landscape is recommended. Touch controls are always available. Audio starts after first interaction.
+          </div>
+        </div>
+      </section>
+
+      <section id="pauseMenu" class="overlayScreen">
+        <div class="panel">
+          <div class="eyebrow">Paused</div>
+          <h2>Alan takes a very tactical breath.</h2>
+          <div class="buttonColumn">
+            <button id="pauseResumeBtn" class="menuButton primary">Resume</button>
+            <button id="pauseSettingsBtn" class="menuButton">Settings</button>
+            <button id="pauseMainMenuBtn" class="menuButton">Main Menu</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="settingsMenu" class="overlayScreen">
+        <div class="panel settingsPanel">
+          <div class="eyebrow">Settings</div>
+          <h2>Comfort, sound, and readability</h2>
+          <div class="settingsGrid">
+            <label class="settingRow"><span>Mute all audio</span><input id="muteToggle" type="checkbox" /></label>
+            <label class="settingRow"><span>Subtitles</span><input id="subtitlesToggle" type="checkbox" checked /></label>
+            <label class="settingRow"><span>Large text</span><input id="largeTextToggle" type="checkbox" /></label>
+            <label class="settingRow"><span>High contrast</span><input id="contrastToggle" type="checkbox" /></label>
+            <label class="settingRow"><span>Reduced motion</span><input id="motionToggle" type="checkbox" /></label>
+            <label class="settingStack">
+              <span>Music volume</span>
+              <input id="musicSlider" type="range" min="0" max="1" step="0.01" />
+            </label>
+            <label class="settingStack">
+              <span>SFX volume</span>
+              <input id="sfxSlider" type="range" min="0" max="1" step="0.01" />
+            </label>
+          </div>
+          <div class="buttonColumn twoWide">
+            <button id="closeSettingsBtn" class="menuButton primary">Done</button>
+            <button id="resetSaveBtn" class="menuButton danger">Reset Save</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="creditsMenu" class="overlayScreen">
+        <div class="panel creditsPanel">
+          <div class="eyebrow">Credits</div>
+          <h2>Made for expansion</h2>
+          <p>
+            Design, code, UI, systems, writing, procedural audio direction, and QA structure by ChatGPT.
+          </p>
+          <p>
+            This build uses original placeholder visuals drawn in Canvas, procedural WebAudio music and SFX,
+            and a fully static architecture suitable for GitHub Pages.
+          </p>
+          <p>
+            Characters, world, jokes, and story are original and inspired by a warm fictionalized research campus.
+          </p>
+          <button id="closeCreditsBtn" class="menuButton primary">Back</button>
+        </div>
+      </section>
+
+      <section id="endingPanel" class="overlayScreen">
+        <div class="panel endingPanel">
+          <div class="eyebrow">Ending reached</div>
+          <h2>Campus saved. Sheep respected. Coffee contained.</h2>
+          <p id="endingText"></p>
+          <div class="buttonColumn twoWide">
+            <button id="endingContinueBtn" class="menuButton primary">Postgame Free Roam</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
