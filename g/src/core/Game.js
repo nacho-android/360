@@ -180,7 +180,11 @@ export class Game {
 
   save(force = false) {
     this.state.hasStarted = true;
-    this.state.progress.checkpoint = { map: this.world.currentMapKey, x: this.state.player.x, y: this.state.player.y };
+    const currentMapKey = this.world?.currentMapKey ?? this.state.progress.currentMap ?? 'campus';
+    const playerX = this.state.player?.x ?? this.state.progress.checkpoint?.x ?? 13.8;
+    const playerY = this.state.player?.y ?? this.state.progress.checkpoint?.y ?? 13.8;
+    this.state.progress.currentMap = currentMapKey;
+    this.state.progress.checkpoint = { map: currentMapKey, x: playerX, y: playerY };
     this.saveManager.save(this.state, force);
   }
 
