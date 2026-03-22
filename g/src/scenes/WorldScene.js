@@ -89,7 +89,7 @@ export class WorldScene {
     this.game.audio.setTheme(this.currentMap.theme || 'campus');
     this.game.state.progress.checkpoint = { map: key, x: startX, y: startY };
     if (!silent) this.game.ui.showToast(this.currentMap.title);
-    this.game.save(true);
+    if (this.game.world === this) this.game.save(true);
   }
 
   getNPCsForCurrentMap() {
