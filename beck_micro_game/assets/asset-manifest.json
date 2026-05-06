@@ -1,0 +1,184 @@
+{
+  "sprites": {
+    "idle": {
+      "file": "assets/sprites/beck/idle.png",
+      "w": 260,
+      "h": 360
+    },
+    "walk_se_0": {
+      "file": "assets/sprites/beck/walk_se_0.png",
+      "w": 260,
+      "h": 360
+    },
+    "walk_se_1": {
+      "file": "assets/sprites/beck/walk_se_1.png",
+      "w": 260,
+      "h": 360
+    },
+    "walk_se_2": {
+      "file": "assets/sprites/beck/walk_se_2.png",
+      "w": 260,
+      "h": 360
+    },
+    "walk_sw_0": {
+      "file": "assets/sprites/beck/walk_sw_0.png",
+      "w": 260,
+      "h": 360
+    },
+    "walk_sw_1": {
+      "file": "assets/sprites/beck/walk_sw_1.png",
+      "w": 260,
+      "h": 360
+    },
+    "walk_sw_2": {
+      "file": "assets/sprites/beck/walk_sw_2.png",
+      "w": 260,
+      "h": 360
+    },
+    "walk_ne_0": {
+      "file": "assets/sprites/beck/walk_ne_0.png",
+      "w": 260,
+      "h": 360
+    },
+    "walk_ne_1": {
+      "file": "assets/sprites/beck/walk_ne_1.png",
+      "w": 260,
+      "h": 360
+    },
+    "walk_ne_2": {
+      "file": "assets/sprites/beck/walk_ne_2.png",
+      "w": 260,
+      "h": 360
+    },
+    "walk_nw_0": {
+      "file": "assets/sprites/beck/walk_nw_0.png",
+      "w": 260,
+      "h": 360
+    },
+    "walk_nw_1": {
+      "file": "assets/sprites/beck/walk_nw_1.png",
+      "w": 260,
+      "h": 360
+    },
+    "walk_nw_2": {
+      "file": "assets/sprites/beck/walk_nw_2.png",
+      "w": 260,
+      "h": 360
+    },
+    "pickup": {
+      "file": "assets/sprites/beck/pickup.png",
+      "w": 260,
+      "h": 360
+    },
+    "surprise": {
+      "file": "assets/sprites/beck/surprise.png",
+      "w": 260,
+      "h": 360
+    },
+    "key_victory": {
+      "file": "assets/sprites/beck/key_victory.png",
+      "w": 260,
+      "h": 360
+    },
+    "celebrate": {
+      "file": "assets/sprites/beck/celebrate.png",
+      "w": 260,
+      "h": 360
+    }
+  },
+  "props": {
+    "key": {
+      "file": "assets/props/key.png",
+      "w": 98,
+      "h": 211
+    },
+    "key_glow": {
+      "file": "assets/props/key_glow.png",
+      "w": 166,
+      "h": 255
+    },
+    "wine": {
+      "file": "assets/props/wine.png",
+      "w": 99,
+      "h": 206
+    },
+    "water": {
+      "file": "assets/props/water.png",
+      "w": 133,
+      "h": 244
+    },
+    "licorice_bowl": {
+      "file": "assets/props/licorice_bowl.png",
+      "w": 205,
+      "h": 160
+    },
+    "licorice_1": {
+      "file": "assets/props/licorice_1.png",
+      "w": 80,
+      "h": 94
+    },
+    "licorice_2": {
+      "file": "assets/props/licorice_2.png",
+      "w": 122,
+      "h": 97
+    },
+    "licorice_3": {
+      "file": "assets/props/licorice_3.png",
+      "w": 116,
+      "h": 106
+    },
+    "cake": {
+      "file": "assets/props/cake.png",
+      "w": 231,
+      "h": 238
+    },
+    "cake_slice": {
+      "file": "assets/props/cake_slice.png",
+      "w": 176,
+      "h": 150
+    },
+    "coin": {
+      "file": "assets/props/coin.png",
+      "w": 181,
+      "h": 204
+    },
+    "clipboard": {
+      "file": "assets/props/clipboard.png",
+      "w": 178,
+      "h": 235
+    },
+    "calculator": {
+      "file": "assets/props/calculator.png",
+      "w": 176,
+      "h": 232
+    },
+    "books": {
+      "file": "assets/props/books.png",
+      "w": 279,
+      "h": 220
+    },
+    "door": {
+      "file": "assets/props/door.png",
+      "w": 224,
+      "h": 228
+    },
+    "exit_arrow": {
+      "file": "assets/props/exit_arrow.png",
+      "w": 260,
+      "h": 236
+    },
+    "sparkle": {
+      "file": "assets/props/sparkle.png",
+      "w": 124,
+      "h": 140
+    }
+  },
+  "backgrounds": {
+    "lab": "assets/backgrounds/lab.png",
+    "market": "assets/backgrounds/market.png",
+    "elasticity": "assets/backgrounds/elasticity.png",
+    "dessert": "assets/backgrounds/dessert.png",
+    "key_chamber": "assets/backgrounds/key_chamber.png",
+    "home": "assets/backgrounds/home.png"
+  }
+}

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#140f25">
+  <title>Beck’s Micro-Adventure</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app" aria-label="Beck’s Micro-Adventure game">
+    <section id="stageWrap">
+      <canvas id="game" width="960" height="540" aria-label="Game canvas"></canvas>
+      <div class="screenGlass" aria-hidden="true"></div>
+
+      <header id="hud" aria-live="polite">
+        <div class="hudTop">
+          <div>
+            <h1 id="hudRoom">Loading…</h1>
+            <p id="hudInventory">Inventory: microscopic optimism</p>
+          </div>
+          <div class="hudButtons">
+            <button id="muteButton" type="button">🔊 Music On</button>
+            <button id="restartButton" type="button">↻ Restart</button>
+          </div>
+        </div>
+        <div class="progressShell" aria-label="Progress"><div id="hudProgress"></div></div>
+        <p id="hudMessage">Loading the Shrink-O-Matic…</p>
+        <p id="hintPill">Tap Start to begin.</p>
+      </header>
+
+      <div id="mobileControls" aria-label="Touch controls">
+        <div class="dpad" aria-label="Movement pad">
+          <button data-key="up" class="pad padUp" type="button" aria-label="Move up">▲</button>
+          <button data-key="left" class="pad padLeft" type="button" aria-label="Move left">◀</button>
+          <button data-key="down" class="pad padDown" type="button" aria-label="Move down">▼</button>
+          <button data-key="right" class="pad padRight" type="button" aria-label="Move right">▶</button>
+        </div>
+        <button id="interactButton" data-key="interact" class="interact" type="button" aria-label="Interact">✦</button>
+      </div>
+
+      <section id="startOverlay" class="overlayPanel">
+        <div class="titleCard">
+          <p class="eyebrow">A tiny birthday quest for a very large intellect</p>
+          <h2>Beck’s Micro-Adventure</h2>
+          <p>
+            Beck, microeconomist at the University of Sydney, has accidentally shrunk herself into one of her own experiments.
+            Guide her through supply, demand, elasticity, and dessert to find the golden key and get home for wine, chocolate licorice bullets, and cake.
+          </p>
+          <div class="controlsHelp">
+            <span>Keyboard: WASD / arrows</span>
+            <span>Interact: E / Space / ✦</span>
+            <span>Mobile: touch controls</span>
+          </div>
+          <button id="startButton" disabled type="button">Loading assets…</button>
+        </div>
+      </section>
+
+      <section id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modalCard">
+          <button id="modalClose" class="modalClose" type="button" aria-label="Close puzzle">×</button>
+          <h2 id="modalTitle">Puzzle</h2>
+          <p id="modalQuestion"></p>
+          <div id="modalChoices" class="choices"></div>
+          <p id="modalFeedback" class="modalFeedback"></p>
+        </div>
+      </section>
+    </section>
+  </main>
+  <script type="module" src="js/game.js"></script>
+</body>
+</html>
