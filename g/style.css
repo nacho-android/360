@@ -1,0 +1,672 @@
+:root {
+  color-scheme: dark;
+  --bg: #08111f;
+  --panel: rgba(14, 22, 36, 0.82);
+  --panel-strong: rgba(10, 17, 28, 0.95);
+  --line: rgba(168, 202, 255, 0.18);
+  --text: #eef5ff;
+  --muted: #b8c5e6;
+  --accent: #7de7cc;
+  --accent-2: #ffd36f;
+  --danger: #ff8277;
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  --radius: 20px;
+  --safe-top: max(12px, env(safe-area-inset-top));
+  --safe-right: max(12px, env(safe-area-inset-right));
+  --safe-bottom: max(12px, env(safe-area-inset-bottom));
+  --safe-left: max(12px, env(safe-area-inset-left));
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: radial-gradient(circle at top, #132746 0%, #09111d 52%, #060c14 100%);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+body.large-text {
+  font-size: 18px;
+}
+
+body.high-contrast {
+  --panel: rgba(6, 9, 16, 0.95);
+  --panel-strong: rgba(0, 0, 0, 0.98);
+  --line: rgba(255, 255, 255, 0.3);
+  --muted: #e0ecff;
+}
+
+body.reduced-motion * {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+#appShell {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#gameCanvas {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  background: transparent;
+}
+
+.overlayScreen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: calc(20px + var(--safe-top)) calc(20px + var(--safe-right)) calc(20px + var(--safe-bottom)) calc(20px + var(--safe-left));
+  background: linear-gradient(180deg, rgba(4, 6, 12, 0.25), rgba(4, 6, 12, 0.72));
+  backdrop-filter: blur(8px);
+  z-index: 14;
+}
+
+.overlayScreen.visible {
+  display: flex;
+}
+
+.overlayScreen.loading {
+  background: radial-gradient(circle at top, rgba(125, 231, 204, 0.18), rgba(8, 17, 31, 0.95));
+  z-index: 20;
+}
+
+.overlayScreen.loading.hidden {
+  display: none;
+}
+
+.panel,
+.glass {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+  border-radius: var(--radius);
+}
+
+.panel {
+  width: min(92vw, 680px);
+  padding: 24px;
+}
+
+.heroPanel {
+  text-align: left;
+}
+
+.heroPanel.wide {
+  width: min(96vw, 760px);
+}
+
+.eyebrow {
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.76rem;
+  margin-bottom: 12px;
+}
+
+h1,
+h2 {
+  margin: 0 0 12px;
+  line-height: 1.02;
+}
+
+h1 {
+  font-size: clamp(2.3rem, 5vw, 4rem);
+}
+
+h2 {
+  font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+}
+
+p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.buttonColumn {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.buttonColumn.twoWide {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.menuButton,
+.touchButton,
+.iconButton {
+  border: 0;
+  cursor: pointer;
+  border-radius: 18px;
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(66, 90, 128, 0.95), rgba(36, 48, 76, 0.95));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 10px 20px rgba(0, 0, 0, 0.22);
+  min-height: 54px;
+  padding: 14px 18px;
+  transition: transform 120ms ease, filter 120ms ease, opacity 120ms ease;
+}
+
+.menuButton:hover,
+.touchButton:hover,
+.iconButton:hover {
+  filter: brightness(1.08);
+}
+
+.menuButton:active,
+.touchButton:active,
+.touchButton.pressed,
+.iconButton:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+.menuButton.primary,
+.touchButton.primary {
+  background: linear-gradient(180deg, rgba(116, 242, 198, 0.95), rgba(62, 171, 144, 0.95));
+  color: #051014;
+  font-weight: 700;
+}
+
+.menuButton.danger {
+  background: linear-gradient(180deg, rgba(255, 124, 124, 0.95), rgba(177, 59, 59, 0.95));
+}
+
+.menuButton.compact {
+  min-height: 42px;
+  padding: 10px 14px;
+}
+
+.faded {
+  opacity: 0.45;
+}
+
+.loadingBar {
+  margin-top: 18px;
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.loadingBar span {
+  display: block;
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, var(--accent), var(--accent-2), transparent);
+  animation: slide 1.2s linear infinite;
+}
+
+@keyframes slide {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(280%); }
+}
+
+.menuFooter {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+#hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.hudTopRow,
+.statusRow,
+.questPanel,
+.achievementRow {
+  position: absolute;
+  left: calc(16px + var(--safe-left));
+  right: calc(16px + var(--safe-right));
+}
+
+.hudTopRow {
+  top: calc(16px + var(--safe-top));
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.statusRow {
+  bottom: calc(120px + var(--safe-bottom));
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  padding: 14px;
+}
+
+.questPanel {
+  top: calc(92px + var(--safe-top));
+  max-width: min(62vw, 560px);
+  padding: 14px 16px;
+}
+
+.achievementRow {
+  bottom: calc(200px + var(--safe-bottom));
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chipStack {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(7, 14, 24, 0.7);
+  color: var(--text);
+  font-size: 0.92rem;
+}
+
+.chip.large {
+  font-weight: 700;
+}
+
+.chip.accent,
+.chip.achievement {
+  background: rgba(38, 57, 92, 0.82);
+}
+
+.label {
+  color: var(--accent-2);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  margin-bottom: 6px;
+}
+
+.questText {
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.compassText,
+.energyText {
+  color: var(--muted);
+  margin-top: 6px;
+  font-size: 0.92rem;
+}
+
+.energyWrap {
+  min-width: 0;
+}
+
+.energyBar {
+  position: relative;
+  height: 16px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.energyBar span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 55%;
+  background: linear-gradient(90deg, #6ef3d0, #f7ef8f);
+  border-radius: inherit;
+}
+
+.inventoryChips {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+#controls {
+  position: absolute;
+  left: calc(16px + var(--safe-left));
+  right: calc(16px + var(--safe-right));
+  bottom: calc(14px + var(--safe-bottom));
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  z-index: 6;
+}
+
+.joystickBase {
+  position: relative;
+  width: 118px;
+  height: 118px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(7, 13, 22, 0.46);
+  box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.04), 0 10px 24px rgba(0, 0, 0, 0.3);
+}
+
+.joystickRing,
+.joystickKnob {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  border-radius: 50%;
+}
+
+.joystickRing {
+  width: 92px;
+  height: 92px;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+}
+
+.joystickKnob {
+  width: 52px;
+  height: 52px;
+  background: radial-gradient(circle at top, #d5f3ff 0%, #6ab6d6 60%, #3c6d92 100%);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+  transition: transform 60ms linear;
+}
+
+.actionCluster {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(110px, 1fr));
+  gap: 10px;
+  width: min(380px, 52vw);
+}
+
+.touchButton {
+  min-height: 62px;
+  font-weight: 700;
+}
+
+.touchButton.alt {
+  grid-column: span 2;
+  min-height: 50px;
+}
+
+.iconButton {
+  pointer-events: auto;
+  width: 50px;
+  min-height: 50px;
+  padding: 0;
+}
+
+.toast,
+.minigameHint,
+.dialogueBox,
+.choicePanel,
+.chapterSplash {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 12;
+}
+
+.toast,
+.minigameHint {
+  pointer-events: none;
+}
+
+.toast {
+  top: calc(150px + var(--safe-top));
+  opacity: 0;
+  padding: 12px 18px;
+  min-width: min(80vw, 420px);
+  text-align: center;
+  border-radius: 999px;
+  background: rgba(9, 18, 31, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.minigameHint {
+  top: calc(190px + var(--safe-top));
+  max-width: min(86vw, 620px);
+  text-align: center;
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.minigameHint.visible {
+  opacity: 1;
+}
+
+.dialogueBox {
+  display: none;
+  bottom: calc(132px + var(--safe-bottom));
+  width: min(94vw, 760px);
+  padding: 16px;
+  pointer-events: auto;
+}
+
+.dialogueBox.visible,
+.choicePanel.visible {
+  display: block;
+}
+
+.dialogueSpeaker {
+  color: var(--accent-2);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.dialogueBody {
+  font-size: 1rem;
+  line-height: 1.48;
+  margin-bottom: 14px;
+}
+
+.choicePanel {
+  display: none;
+  bottom: calc(252px + var(--safe-bottom));
+  width: min(86vw, 520px);
+  padding: 16px;
+}
+
+.choicePrompt {
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.chapterSplash {
+  top: calc(70px + var(--safe-top));
+  display: none;
+  width: min(86vw, 560px);
+  padding: 16px;
+  text-align: center;
+  animation: chapterFade 2.8s ease forwards;
+}
+
+.chapterSplash.visible {
+  display: block;
+}
+
+.chapterSplashTitle {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.chapterSplashBody {
+  color: var(--muted);
+}
+
+@keyframes chapterFade {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+  18%, 70% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.settingRow,
+.settingStack {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.settingStack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+input[type='checkbox'] {
+  width: 22px;
+  height: 22px;
+}
+
+input[type='range'] {
+  width: 100%;
+}
+
+.creditsPanel,
+.endingPanel {
+  max-width: 720px;
+}
+
+@media (max-width: 900px) {
+  .questPanel {
+    max-width: unset;
+    right: calc(16px + var(--safe-right));
+  }
+
+  .statusRow {
+    grid-template-columns: 1fr;
+  }
+
+  .inventoryChips {
+    justify-content: flex-start;
+  }
+
+  .settingsGrid,
+  .buttonColumn.twoWide {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .hudTopRow {
+    gap: 8px;
+  }
+
+  .chipStack.left {
+    max-width: 72vw;
+  }
+
+  .questPanel {
+    top: calc(118px + var(--safe-top));
+  }
+
+  .achievementRow {
+    display: none;
+  }
+
+  .statusRow {
+    bottom: calc(160px + var(--safe-bottom));
+  }
+
+  #controls {
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .joystickBase {
+    width: 104px;
+    height: 104px;
+  }
+
+  .joystickRing {
+    width: 80px;
+    height: 80px;
+  }
+
+  .joystickKnob {
+    width: 46px;
+    height: 46px;
+  }
+
+  .actionCluster {
+    width: min(430px, 58vw);
+    grid-template-columns: repeat(2, minmax(96px, 1fr));
+  }
+
+  .touchButton {
+    min-height: 58px;
+    padding-inline: 12px;
+    font-size: 0.95rem;
+  }
+
+  .dialogueBox {
+    bottom: calc(150px + var(--safe-bottom));
+  }
+}
+
+@media (orientation: portrait) {
+  .menuFooter::after {
+    content: ' Tip: rotate to landscape for the best view.';
+    color: var(--accent-2);
+  }
+
+  .statusRow {
+    bottom: calc(200px + var(--safe-bottom));
+  }
+
+  #controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .joystickBase {
+    align-self: flex-start;
+  }
+
+  .actionCluster {
+    width: 100%;
+    max-width: unset;
+  }
+
+  .dialogueBox {
+    bottom: calc(216px + var(--safe-bottom));
+  }
+}
